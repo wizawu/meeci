@@ -63,7 +63,7 @@
     </ul>
 
     <div id="tab-content">
-      <div id="tab-signup" style="display:inline">
+      <div id="tab-signup" style="display:none">
         <form role="form">
           <div class="form-group">
             <label>Username</label>
@@ -78,14 +78,31 @@
             <input type="password" class="form-control">
           </div>
           <div class="form-group">
-            <label>Password Again</label>
+            <label>Repeat Password</label>
             <input type="password" class="form-control">
           </div>
           <button type="button" class="btn btn-success">Submit</button>
         </div>
       </div>
 
-      <div id="tab-console" style="display:none">
+      <div id="tab-console" style="display:inline">
+        <div id="console-column1">
+          Build<br>Container<br>Commit
+        </div>
+        <div id="console-column2">
+          <span id="build-value">0</span><br>
+          <span id="container-value">debian</span><br>
+          <span id="commit-value">cb3bceb(master)</span>
+        </div>
+        <div id="console-column3">
+          Elapsed<br>Worker<br>Committer
+        </div>
+        <div id="console-column4">
+          <span id="elapsed-value">00:00</span><br>
+          <span id="worker-value">worker-01</span><br>
+          <span id="committer-value">wizawu</span>
+        </div>
+        <code>Meeci Web is listening on port 80</code>
       </div>
 
       <div id="tab-history" style="display:none">

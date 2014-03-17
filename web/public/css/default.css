@@ -124,3 +124,31 @@ html, body {
 #tab-signup * button {
     margin-top: 10px;
 }
+
+#tab-console div {
+    float: left;
+    padding: 20px 30px 0 5px;
+    font-size: 14px;
+}
+
+#console-column1, #console-column3 {
+    color: #666666;
+}
+
+#console-column2, #console-column4 {
+    color: #222244;
+    width: 300px;
+}
+
+#tab-console code {
+    display: block;
+    position: absolute;
+    top: 130px;
+    left: 5px;
+    width: 98%;
+    padding: 10px;
+    color: #f0f0f0;
+    background-color: #101010;
+    font-family: "LetterGothicMono";
+    font-size: 14px;
+}
