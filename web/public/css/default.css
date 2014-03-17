@@ -89,13 +89,13 @@ html, body {
     left: 50px;
 }
 
-.form-control {
+#form-login .form-control {
     margin-top: 7px;
     margin-bottom: 7px;
     height: 30px;
 }
 
-.btn {
+#account * .btn {
     margin-left: 8px;
     padding: 2px 5px;
     font-size: 13px;
@@ -114,6 +114,13 @@ html, body {
     position: absolute;
     top: 50px;
     width: 100%;
-    min-height: 200px; 
-    border: 1px solid black;
+}
+
+#tab-signup * .form-group {
+    width: 250px;
+    margin-bottom: 10px;
+}
+
+#tab-signup * button {
+    margin-top: 10px;
 }
