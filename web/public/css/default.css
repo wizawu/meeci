@@ -22,7 +22,7 @@ html, body {
     border-bottom: 2px solid white;
 }
 
-#github_link {
+#github-link {
     position: absolute;
     bottom: 0;
     width: 100%;
@@ -30,13 +30,13 @@ html, body {
     border-top: 2px solid white;
     background-image: url(/images/GitHub-Mark-Light-32px.png);
     background-repeat: no-repeat;
-    background-position: 5% 50%;
+    background-position: 10% 50%;
 }
 
-#github_link a {
+#github-link a {
     position: absolute;
     top: 10px;
-    left: 60px;
+    left: 80px;
     color: white;
     text-decoration: none;
     font-size: 14px;
@@ -50,8 +50,9 @@ html, body {
     padding-right: 30px;
 }
 
-#repos_name {
+#repos-name {
     color: #001941;
+    font-weight: bold;
 }
 
 #account {
@@ -60,6 +61,32 @@ html, body {
     right: 30px;
     width: 140px;
     height: 110px;
+}
+
+#profile {
+    position: absolute;
+    top: 15px;
+}
+
+#profile img {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+}
+
+#profile p {
+    position: absolute;
+    top: 0;
+    left: 60px;
+    font-size: 16px;
+    font-color: #001941;
+    font-weight: bold;
+}
+
+#profile button {
+    position: absolute;
+    top: 25px;
+    left: 50px;
 }
 
 .form-control {
@@ -81,4 +108,12 @@ html, body {
 
 .nav-tabs li a {
     line-height: 1.0;
+}
+
+#tab-content {
+    position: absolute;
+    top: 50px;
+    width: 100%;
+    min-height: 200px; 
+    border: 1px solid black;
 }
