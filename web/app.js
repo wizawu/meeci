@@ -9,7 +9,7 @@ app.use(express.logger({
 app.use(express.errorHandler());
 
 app.get('/', function(req, res) {
-    res.sendfile('test.html');
+    res.sendfile('home.html');
 });
 
 var http = require('http');

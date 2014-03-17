@@ -1,0 +1,43 @@
+* {
+    font-family: 'Lato', sans-serif;
+    margin: 0 0 0 0;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+#aside {
+    position: relative;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 250px;
+    background: #001941;
+}
+
+#logo {
+    padding: 0 50px;
+    border-bottom: 2px solid white;
+}
+
+#github_link {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 40px;
+    border-top: 2px solid white;
+    background-image: url(/images/GitHub-Mark-Light-32px.png);
+    background-repeat: no-repeat;
+    background-position: 5% 50%;
+}
+
+#github_link a {
+    position: absolute;
+    top: 10px;
+    left: 60px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+}

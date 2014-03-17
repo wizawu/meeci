@@ -26,7 +26,7 @@ CREATE TABLE build (
     build        INTEGER,
 
     branch       TEXT,
-    commit       TEXT,
+    commit_      TEXT,
     committer    TEXT,
     message      TEXT,
 
