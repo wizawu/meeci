@@ -41,3 +41,24 @@ html, body {
     text-decoration: none;
     font-size: 14px;
 }
+
+#main {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    padding-left: 280px;
+    padding-right: 30px;
+}
+
+#repos_name {
+    color: #001941;
+}
+
+#tabs {
+    position: relative;
+    top: 10px;
+}
+
+.nav-tabs li a {
+    line-height: 1.0;
+}
