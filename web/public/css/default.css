@@ -9,7 +9,7 @@ html, body {
 }
 
 #aside {
-    position: relative;
+    position: fixed;
     top: 0;
     left: 0;
     height: 100%;
@@ -160,5 +160,23 @@ html, body {
 }
 
 #tab-account * button {
+    margin-top: 10px;
+}
+
+#tab-container * #container-name {
+    width: 250px;
+}
+
+#tab-container * #container-desc {
+    width: 625px;
+}
+
+#tab-container * textarea {
+    position: relative;
+    top: -15px;
+    width: 625px;
+}
+
+#tab-container * button {
     margin-top: 10px;
 }
