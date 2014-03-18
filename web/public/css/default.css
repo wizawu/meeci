@@ -114,9 +114,10 @@ html, body {
     position: absolute;
     top: 50px;
     width: 100%;
+    padding: 5px;
 }
 
-#tab-signup * .form-group {
+#tab-signup * input {
     width: 250px;
     margin-bottom: 10px;
 }
@@ -151,4 +152,13 @@ html, body {
     background-color: #101010;
     font-family: "LetterGothicMono";
     font-size: 14px;
+}
+
+#tab-account * input {
+    width: 250px;
+    margin-bottom: 10px;
+}
+
+#tab-account * button {
+    margin-top: 10px;
 }
