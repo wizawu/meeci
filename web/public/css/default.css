@@ -167,6 +167,71 @@ html, body {
     margin-top: 10px;
 }
 
+#tab-repos form div label {
+    margin-right: 10px;
+}
+
+#tab-repos form div input {
+    width: 360px;
+    margin-right: 10px;
+}
+
+#repos-options {
+    position: absolute;
+    right: 0;
+}
+
+#repos-options * input {
+    width: 360px;
+}
+
+#repos-options * textarea {
+    width: 360px;
+    font-family: 'LetterGothicMono', Monospace;
+    font-size: 14px;
+}
+
+.repos-group {
+    position: relative;
+    margin-top: 25px;
+    height: 35px;
+}
+
+.repos-group a {
+    position: relative;
+    top: -8px;
+    left: 8px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.repos-group p {
+    position: relative;
+    top: -16px;
+    left: 42px;
+    width: 480px;
+    font-size: 13px;
+    color: #666;
+}
+
+.repos-group button {
+    padding: 3px 6px;
+    width: 64px;
+    font-size: 13px;
+}
+
+.repos-group #unwatch-button {
+    position: absolute;
+    top: 8px;
+    left: 480px;
+}
+
+.repos-group #options-button {
+    position: absolute;
+    top: 8px;
+    left: 560px;
+}
+
 #tab-container {
     position: relative;
     top: -10px;

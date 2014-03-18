@@ -132,7 +132,45 @@
         </table>
       </div>
 
-      <div id="tab-repos" style="display:none">
+      <div id="tab-repos" style="display:block">
+        <form class="form-inline" role="form">
+          <div class="form-group">
+            <label>Repository URL</label>
+            <input type="url" class="form-control" placeholder="git@">
+            <button type="button" class="btn btn-primary">Watch</button>
+          </div>
+        </form>
+
+        <div id="watched-repos">
+          <form role="form" id="repos-options" style="display: block">
+            <div class="form-group">
+              <label>Container</label>
+              <input type="text" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Script</label>
+              <textarea class="form-control" rows="14"></textarea>
+            </div>
+            <button type="button" class="btn btn-primary">Update</button>
+          </form>
+
+          <div class="repos-group">
+            <img src="/images/GitHub-Mark-32px.png" alt="GitHub">
+            <a href="https://github.com/drone/drone">drone/drone</a>
+            <p>Drone is a Continuous Integration platform built on Docker</p>
+            <button type="button" class="btn btn-danger" id="unwatch-button">Unwatch</button>
+            <button type="button" class="btn btn-success" id="options-button">Options</button>
+          </div>
+
+          <div class="repos-group">
+            <img src="/images/Bitbucket-Mark-32px.png" alt="Bitbucket">
+            <a href="https://bitbucket.org/nikratio/s3ql">nikratio/s3ql</a>
+            <p>S3QL is a file system that stores all its data online</p>
+            <button type="button" class="btn btn-danger" id="unwatch-button">Unwatch</button>
+            <button type="button" class="btn btn-success" id="options-button">Options</button>
+          </div>
+        </div>
+
       </div>
 
       <div id="tab-container" style="display:none">
@@ -183,7 +221,7 @@
         </form>
       </div>
 
-      <div id="tab-account" style="display:block">
+      <div id="tab-account" style="display:none">
         <form role="form">
           <div class="form-group">
             <label>Name</label>
