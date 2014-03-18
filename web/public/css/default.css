@@ -114,7 +114,7 @@ html, body {
     position: absolute;
     top: 50px;
     width: 100%;
-    padding: 5px;
+    padding: 5px 5px 20px;
 }
 
 #tab-signup * input {
@@ -128,7 +128,7 @@ html, body {
 
 #tab-console div {
     float: left;
-    padding: 20px 30px 0 5px;
+    padding-right: 25px;
     font-size: 14px;
 }
 
@@ -144,14 +144,18 @@ html, body {
 #tab-console code {
     display: block;
     position: absolute;
-    top: 130px;
-    left: 5px;
-    width: 98%;
+    top: 80px;
+    width: 96%;
     padding: 10px;
     color: #f0f0f0;
     background-color: #101010;
     font-family: "LetterGothicMono";
     font-size: 14px;
+}
+
+#tab-history {
+    position: relative;
+    top: -10px;
 }
 
 #tab-account * input {
@@ -161,6 +165,11 @@ html, body {
 
 #tab-account * button {
     margin-top: 10px;
+}
+
+#tab-container {
+    position: relative;
+    top: -10px;
 }
 
 #tab-container * #container-name {
@@ -177,6 +186,11 @@ html, body {
     width: 625px;
 }
 
-#tab-container * button {
+#tab-container * .btn-primary {
     margin-top: 10px;
+}
+
+#tab-container * .btn-danger {
+    padding: 2px 5px;
+    font-size: 13px;
 }
