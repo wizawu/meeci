@@ -119,7 +119,7 @@ a:focus {
     position: absolute;
     top: 50px;
     width: 100%;
-    padding: 5px 5px 20px;
+    padding: 5px 5px 10px;
 }
 
 #tab-signup * input {
@@ -143,7 +143,7 @@ a:focus {
 
 #console-column2, #console-column4 {
     color: #222244;
-    width: 300px;
+    width: 32%;
 }
 
 #tab-console code {
@@ -177,7 +177,7 @@ a:focus {
     margin-right: 10px;
 }
 
-#tab-repos form div input {
+#tab-repos .form-inline * input {
     width: 360px;
     margin-right: 10px;
 }
@@ -185,14 +185,10 @@ a:focus {
 #repos-options {
     position: absolute;
     right: 0;
-}
-
-#repos-options * input {
-    width: 360px;
+    width: 36%;
 }
 
 #repos-options * textarea {
-    width: 360px;
     font-family: 'LetterGothicMono', Monospace;
     font-size: 14px;
 }
@@ -204,7 +200,10 @@ a:focus {
 .repos-group {
     position: relative;
     margin-top: 25px;
-    height: 35px;
+    width: 61%;
+    height: 45px;
+    padding-top: 10px;
+    border-top: 1px solid #ddc;
 }
 
 .repos-group a {
@@ -219,13 +218,13 @@ a:focus {
     position: relative;
     top: -16px;
     left: 42px;
-    width: 480px;
-    font-size: 13px;
+    width: 60%;
+    font-size: 12px;
     color: #666;
 }
 
 .repos-group button {
-    padding: 3px 6px;
+    padding: 2px 4px;
     width: 64px;
     font-size: 13px;
 }
@@ -233,13 +232,13 @@ a:focus {
 .repos-group #unwatch-button {
     position: absolute;
     top: 8px;
-    left: 480px;
+    right: 0;
 }
 
 .repos-group #options-button {
     position: absolute;
-    top: 8px;
-    left: 560px;
+    top: 38px;
+    right: 0;
 }
 
 #tab-container {
