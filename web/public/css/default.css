@@ -6,6 +6,11 @@
 html, body {
     height: 100%;
     width: 100%;
+    overflow-y: hidden;
+}
+
+a:focus {
+    outline: none;
 }
 
 #aside {
@@ -123,7 +128,7 @@ html, body {
 }
 
 #tab-signup * button {
-    margin-top: 10px;
+    margin-top: 6px;
 }
 
 #tab-console div {
@@ -145,7 +150,8 @@ html, body {
     display: block;
     position: absolute;
     top: 80px;
-    width: 96%;
+    width: 98%;
+    max-width: 880px;
     padding: 10px;
     color: #f0f0f0;
     background-color: #101010;
@@ -164,7 +170,7 @@ html, body {
 }
 
 #tab-account * button {
-    margin-top: 10px;
+    margin-top: 6px;
 }
 
 #tab-repos form div label {
@@ -189,6 +195,10 @@ html, body {
     width: 360px;
     font-family: 'LetterGothicMono', Monospace;
     font-size: 14px;
+}
+
+#repos-options button {
+    margin-top: 6px;
 }
 
 .repos-group {
@@ -252,7 +262,7 @@ html, body {
 }
 
 #tab-container * .btn-primary {
-    margin-top: 10px;
+    margin-top: 6px;
 }
 
 #tab-container * .btn-danger {
