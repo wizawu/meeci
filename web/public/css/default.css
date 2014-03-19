@@ -45,7 +45,7 @@ a:focus {
 
 .github-task, .bitbucket-task {
     position: relative;
-    margin: 0 90px 10px 2px;
+    margin: 0 90px 12px 2px;
     height: 48px;
     background-color: white;
     border-radius: 3px;
@@ -120,34 +120,41 @@ a:focus {
     position: absolute;
     top: 10px;
     right: 30px;
-    width: 140px;
     height: 110px;
+    min-width: 120px;
 }
 
 #profile {
-    position: absolute;
-    top: 15px;
+    margin-top: 7px;
 }
 
 #profile img {
+    float: left;
+    margin: 2px;
     width: 48px;
     height: 48px;
     border-radius: 8px;
 }
 
 #profile p {
-    position: absolute;
-    top: 0;
-    left: 60px;
-    font-size: 16px;
-    font-color: #001941;
+    float: left;
+    margin-left: 8px;
+    font-size: 15px;
+    color: #001941;
     font-weight: bold;
 }
 
+#account p:hover {
+    color: #66b;
+}
+
 #profile button {
-    position: absolute;
-    top: 25px;
-    left: 50px;
+    float: left;
+    margin-top: -7px;
+}
+
+#form-login {
+    width: 140px;
 }
 
 #form-login .form-control {
