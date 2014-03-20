@@ -2,21 +2,21 @@
 
 set -e
 
-if [[ `whoami` != "root" ]]; then
-    echo "Must be run as root."
+if [[ `whoami` != 'root' ]]; then
+    echo 'Must run $0 as root.'
     exit 1
 fi
 
 # Step 1: install dependencies
-apt-get install -y \
-                openssh-server \
-                postgresql \
-                libpq-dev \
+apt-get install -y --no-install-recommends \
+                vsftpd \
+                sqlite3 \
                 memcached \
                 nodejs \
                 npm
 
-npm update -g express pg
+npm install -g express
+npm install -g sqlite3
 
 # Step 2: create user meeci
 if [[ `grep "^meeci" /etc/passwd` == '' ]]; then
