@@ -102,29 +102,31 @@
 
     <span id="profile" style="display:block">
       <img src="/images/wizawu-80px.png" alt="avatar">
-      <p>wizawu</p><br>
-      <button type="button" class="btn btn-danger">Log Out</button>
+      <div>
+        <p>wizawu</p><br>
+        <button type="button" class="btn btn-danger">Log Out</button>
+      </div>
     </span>
   </div>
 
   <div id="tabs">
-    <ul class="nav nav-tabs">
-      <li tabid="tab-console" class="active">
+    <ul class="nav nav-tabs" id="tab-titles">
+      <li tabid="tab-console" id="li-console" class="active">
         <a href="">Console</a>
       </li>
-      <li tabid="tab-history">
+      <li tabid="tab-history" id="li-history">
         <a href="">History</a>
       </li>
-      <li tabid="tab-repos">
+      <li tabid="tab-repos" id="li-repos">
         <a href="">Repositories</a>
       </li>
-      <li tabid="tab-container">
+      <li tabid="tab-container" id="li-container">
         <a href="">Containers</a>
       </li>
-      <li tabid="tab-account">
+      <li tabid="tab-account" id="li-account">
         <a href="">Account</a>
       </li>
-      <li tabid="tab-signup">
+      <li tabid="tab-signup" id="li-signup">
         <a href="">Join Now</a>
       </li>
     </ul>
@@ -150,7 +152,7 @@
         </form>
       </div>
 
-      <div id="tab-console" style="display:none">
+      <div id="tab-console" style="display:block">
         <div id="console-column1">
           Build<br>Container<br>Commit
         </div>
@@ -203,7 +205,7 @@
         </table>
       </div>
 
-      <div id="tab-repos" style="display:block">
+      <div id="tab-repos" style="display:none">
         <form class="form-inline" role="form">
           <div class="form-group">
             <label>Repository URL</label>
@@ -216,7 +218,7 @@
           <form role="form" id="repos-options" style="display: block">
             <div class="form-group">
               <label>Container</label>
-              <input type="text" class="form-control">
+              <input type="text" class="form-control" placeholder="container@creator">
             </div>
             <div class="form-group">
               <label>Script</label>

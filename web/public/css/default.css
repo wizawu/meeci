@@ -131,32 +131,38 @@ a:focus {
 }
 
 #profile {
-    margin-top: 7px;
+    margin-top: 15px;
 }
 
 #profile img {
-    float: left;
+    float: right;
     margin: 2px;
     width: 48px;
     height: 48px;
     border-radius: 8px;
 }
 
-#profile p {
-    float: left;
-    margin-left: 8px;
-    font-size: 15px;
-    color: #001941;
-    font-weight: bold;
+#profile div {
+    float: right;
+    width: 250px;
+    margin-right: 10px;
 }
 
-#account p:hover {
+#profile div p {
+    height: 0px;
+    font-size: 15px;
+    font-weight: bold;
+    text-align: right;
+    color: #001941;
+}
+
+#profile div p:hover {
     color: #66b;
 }
 
-#profile button {
-    float: left;
-    margin-top: -7px;
+#profile div button {
+    float: right;
+    margin-top: -6px;
 }
 
 #form-login {
