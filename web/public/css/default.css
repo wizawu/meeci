@@ -166,6 +166,7 @@ a:focus {
 }
 
 #form-login {
+    padding-top: 1px;
     width: 140px;
 }
 
