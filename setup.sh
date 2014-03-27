@@ -1,32 +1,28 @@
 #!/bin/bash
 
-set -e
-
-if [[ `whoami` != 'root' ]]; then
-    echo 'Must run $0 as root.'
+if [[ `whoami` != root ]]; then
+    echo "Need to be root."
     exit 1
 fi
 
-# Step 1: install dependencies
+set -x -e
+
 apt-get install -y --no-install-recommends \
-                vsftpd \
-                sqlite3 \
-                memcached \
-                nodejs \
-                npm
+                memcached nodejs vsftpd
 
-npm install -g express
-npm install -g sqlite3
+mkdir -p /var/lib/meeci/logs/container
+mkdir -p /var/lib/meeci/logs/build
+mkdir -p /var/lib/meeci/containers
+mkdir -p /srv/ftp/meeci/containers
 
-# Step 2: create user meeci
-if [[ `grep "^meeci" /etc/passwd` == '' ]]; then
-    useradd -m -s /bin/bash meeci
-fi
+chmod 777 /srv/ftp/meeci
+chmod 777 /srv/ftp/meeci/containers
 
-# Step 3: create directories
-datadir=/var/opt/meeci
-mkdir -p $datadir/containers
-mkdir -p $datadir/builds
-mkdir -p /opt/meeci
+set +x
+echo "Perform the following steps manually:"
+echo "[1] install PostgreSQL"
+echo "[2] uncomment 'write_enable=YES' and 'anon_upload_enable=YES' in /etc/vsftpd.conf"
+echo "[3] sudo /etc/init.d/vsftpd restart"
 
-exit 0
+set +x
+echo "Then you can start meeci-web with: ./meeci-web.sh 80"
