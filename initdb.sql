@@ -13,7 +13,7 @@ CREATE UNIQUE INDEX users_user_idx ON users(user_);
 CREATE UNIQUE INDEX users_email_idx ON users(email);
 
 INSERT INTO users(user_, name, email, status, passwd, salt) VALUES(
-    'root', 'root', 'wizawu@gmail.com', 1,
+    'root', 'root', 'root@meeci.net', 1,
     'rDzN/Z+oLLdQK9TAiLTQuvS/MZh25tstrpWRPIyFJbU=',
     'G4y2NAwMP7ES7pm+xO5ttt5L29gEurxoMFzur3iOFcw='
 );
@@ -44,7 +44,7 @@ CREATE INDEX build_repos_idx ON build(repos, owner, host);
 
 -- repos --
 CREATE TABLE repos (
-    id           INTEGER PRIMARY KEY,
+    id           SERIAL PRIMARY KEY,
     user_        TEXT,
     host         SMALLINT,
     owner        TEXT,
@@ -58,7 +58,7 @@ CREATE UNIQUE INDEX repos_user_idx ON repos(user_, repos, owner, host);
 
 -- container --
 CREATE TABLE container (
-    id       INTEGER PRIMARY KEY,
+    id       SERIAL PRIMARY KEY,
     user_    TEXT,
     name     VARCHAR(64),
     descr    TEXT,
