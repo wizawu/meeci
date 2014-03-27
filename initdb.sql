@@ -1,24 +1,26 @@
--- SQLite version 3 --
-
 -- user --
-CREATE TABLE user (
-    id        INTEGER PRIMARY KEY,
-    user      VARCHAR(32),
+CREATE TABLE users (
+    id        SERIAL PRIMARY KEY,
+    user_     VARCHAR(32) NOT NULL,
     name      VARCHAR(64),
-    email     VARCHAR(128),
-    passwd    CHAR(32)
+    email     VARCHAR(128) NOT NULL,
+    passwd    CHAR(44) NOT NULL,
+    salt      CHAR(44) NOT NULL,
+    status    SMALLINT DEFAULT 0
 );
 
-CREATE UNIQUE INDEX user_user_idx ON user(user);
-CREATE UNIQUE INDEX user_email_idx ON user(email);
+CREATE UNIQUE INDEX users_user_idx ON users(user_);
+CREATE UNIQUE INDEX users_email_idx ON users(email);
 
-INSERT INTO user(id, user, name, email, passwd) VALUES(
-    1000000000, 'root', 'root', 'wizawu@gmail.com', '63a9f0ea7bb98050796b649e85481845'
+INSERT INTO users(user_, name, email, status, passwd, salt) VALUES(
+    'root', 'root', 'wizawu@gmail.com', 1,
+    'rDzN/Z+oLLdQK9TAiLTQuvS/MZh25tstrpWRPIyFJbU=',
+    'G4y2NAwMP7ES7pm+xO5ttt5L29gEurxoMFzur3iOFcw='
 );
 
 -- build --
 CREATE TABLE build (
-    id           INTEGER PRIMARY KEY,
+    id           SERIAL PRIMARY KEY,
     
     host         SMALLINT,
     owner        TEXT,
@@ -26,14 +28,14 @@ CREATE TABLE build (
     build        INTEGER,
 
     branch       TEXT,
-    commit_      TEXT,
+    commit       TEXT,
     committer    TEXT,
     message      TEXT,
 
     container    TEXT,
     worker       TEXT,
 
-    start        TEXT,
+    start        TIMESTAMP,
     duration     INTEGER,
     return       SMALLINT 
 );
@@ -43,25 +45,25 @@ CREATE INDEX build_repos_idx ON build(repos, owner, host);
 -- repos --
 CREATE TABLE repos (
     id           INTEGER PRIMARY KEY,
-    user         TEXT,
+    user_        TEXT,
     host         SMALLINT,
     owner        TEXT,
     repos        TEXT,
-    desc         TEXT,
+    descr        TEXT,
     container    TEXT,
     script       TEXT
 );
 
-CREATE UNIQUE INDEX repos_user_idx ON repos(user, repos, owner, host);
+CREATE UNIQUE INDEX repos_user_idx ON repos(user_, repos, owner, host);
 
 -- container --
 CREATE TABLE container (
-    id      INTEGER PRIMARY KEY,
-    user    TEXT,
-    name    VARCHAR(64),
-    desc    TEXT,
-    size    INTEGER,
-    time    TEXT
+    id       INTEGER PRIMARY KEY,
+    user_    TEXT,
+    name     VARCHAR(64),
+    descr    TEXT,
+    size     INTEGER,
+    time     TIMESTAMP
 );
 
-CREATE UNIQUE INDEX container_name_idx ON container(user, name);
+CREATE UNIQUE INDEX container_name_idx ON container(user_, name);
