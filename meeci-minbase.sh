@@ -5,7 +5,7 @@ if [[ ! `whoami` == root ]]; then
     exit 1
 fi
 
-set -e -v
+set -x -e
 
 mkdir -p minbase
 debootstrap --arch=amd64 --variant=minbase jessie ./minbase \
@@ -15,6 +15,6 @@ systemd-nspawn -D ./minbase apt-get clean
 tar jcf meeci-minbase.bz2 -C minbase .
 rm -rf minbase
 
-set +v
+set +x
 
 echo "Created meeci-minbase.bz2"
