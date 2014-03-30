@@ -1,9 +1,14 @@
 #!/bin/bash
 
-if [[ $1 == "-h" || $# -ne 1 ]]; then
+if [[ $# -ne 1 ]]; then
     echo "Usage: $0 <PORT>"
-    exit 0
+    exit 1
 fi 
+
+if [[ `pgrep postgres` == '' ]]; then
+    echo "PostgreSQL is not running."
+    exit 2
+fi
 
 set -e
 
