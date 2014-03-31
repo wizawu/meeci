@@ -35,7 +35,7 @@ CREATE TABLE build (
     container    TEXT,
     worker       TEXT,
 
-    start        TIMESTAMP,
+    start        TIMESTAMP WITH TIME ZONE,
     duration     INTEGER,
     return       SMALLINT 
 );
@@ -63,7 +63,7 @@ CREATE TABLE container (
     name     VARCHAR(64),
     descr    TEXT,
     size     INTEGER,
-    time     TIMESTAMP
+    time     TIMESTAMP WITH TIME ZONE
 );
 
 CREATE UNIQUE INDEX container_name_idx ON container(user_, name);
