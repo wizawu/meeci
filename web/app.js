@@ -22,6 +22,11 @@ app.get("/", function(req, res) {
     res.sendfile("home.html");
 });
 
+app.get("/logout", function(req, res) {
+    req.session.user = null;
+    res.send(200);
+});
+
 app.post("/signup", function(req, res) {
     var body = req.body;
     var user = body.user, email = body.email, passwd = body.passwd;
@@ -58,11 +63,42 @@ app.post("/signup", function(req, res) {
     }
 });
 
+app.post("/user", function(req, res) {
+    var body = req.body;
+    var user = body.user, passwd = body.passwd;
+    if (user && passwd) {
+        sql_auth(user, passwd, function(code) {
+            if (code == 200) req.session.user = user;
+            res.send(code);
+        });
+    } else {
+        res.send(400);
+    }
+});
+
 app.get("/user", function(req, res) {
     if (req.session.user == null) {
         res.json({"user": null});
     } else {
-        res.json({"user": "wiza"})
+        var user = req.session.user;
+        pg.connect(pgdb, function(err, client, release) {
+            if (err) return errlog(err);
+            var q = strformat("SELECT * FROM users WHERE user_ = '%s'", user); 
+            client.query(q, function(err, _res) {
+                if (err) {
+                    res.send(500);
+                    return errlog(err);
+                } else {
+                    var row = _res.rows[0];
+                    res.json(200, {
+                        user: user,
+                        name: row.name,
+                        email: row.email,
+                        gravatar: gravatarURL(row.email)
+                    });
+                }
+            });
+        });
     }
 });
 
@@ -97,6 +133,15 @@ function encrypt(passwd) {
     return { hash: hash, salt: salt };
 }
 
+function passwordMatch(passwd, hash, salt) {
+    return hash == crypto.createHash("sha256").update(salt+passwd).digest("base64");
+}
+
+function gravatarURL(email) {
+    var hex = crypto.createHash("md5").update(email).digest("hex");
+    return strformat("http://www.gravatar.com/avatar/%s.png?s=48", hex);
+}
+
 function sql_exist(table, cond, callback) {
     var q = strformat("SELECT 1 FROM %s WHERE %s;", table, cond);
     pg.connect(pgdb, function(err, client, release) {
@@ -123,6 +168,29 @@ function sql_insert(table, fields, values, callback) {
                 return errlog(err);
             } else {
                 callback(200);
+            }
+        });
+    });
+}
+
+function sql_auth(user, passwd, callback) {
+    var q = strformat("SELECT * FROM users WHERE user_ = '%s'", user);
+    console.log(q);
+    pg.connect(pgdb, function(err, client, release) {
+        if (err) return errlog(err);
+        client.query(q, function(err, res) {
+            release();
+            if (err) {
+                callback(500);
+                return errlog(err);
+            } else {
+                if (res.rows.length == 0) {
+                    callback(401);
+                } else {
+                    var hash = res.rows[0].passwd;
+                    var salt = res.rows[0].salt;
+                    callback(passwordMatch(passwd, hash, salt) ? 200:401);
+                }
             }
         });
     });

@@ -95,16 +95,16 @@
 
   <div id="account">
     <form id="form-login" style="display:none">
-      <input type="text" class="form-control" placeholder="username">
-      <input type="password" class="form-control" placeholder="password">
-      <button type="button" class="btn btn-primary">Log In</button>
-      <button id="join-now" type="button" class="btn btn-success">Join Now</button>
+      <input type="text" class="form-control" id="login-user" placeholder="username">
+      <input type="password" class="form-control" id="login-pswd" placeholder="password">
+      <button type="button" class="btn btn-primary" id="log-in">Log In</button>
+      <button type="button" class="btn btn-success" id="join-now">Join Now</button>
     </form>
 
     <span id="profile" style="display:block">
-      <img src="/images/wizawu-80px.png" alt="avatar">
+      <img id="gravatar" src="/images/GitHub-Mark-80px.png" alt="gravatar">
       <div>
-        <p>wizawu</p><br>
+        <p id="current-user"></p><br>
         <button type="button" class="btn btn-danger">Log Out</button>
       </div>
     </span>

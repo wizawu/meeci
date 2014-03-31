@@ -86,6 +86,10 @@ function setDivAccount() {
             if (model.get("user")) {
                 displayElementById("form-login", "none");
                 displayElementById("profile", "block");
+                var e = document.getElementById("gravatar");
+                e.src = model.get("gravatar");
+                e = document.getElementById("current-user");
+                e.innerHTML = model.get("user");
             } else {
                 displayElementById("form-login", "block");
                 displayElementById("profile", "none");
@@ -103,6 +107,7 @@ function addJoinEvent() {
     };
 }
 
+/* Submit sign-up information */
 function addSignUpEvent() {
     var f = getChildByTagName(document.getElementById("tab-signup"), "form");
     var b = getChildByTagName(f, "button");
@@ -151,11 +156,33 @@ function addSignUpEvent() {
     }
 }
 
+/* Log in */
+function addLoginEvent() {
+    var b = document.getElementById("log-in");
+    b.onclick = function() {
+        var u = document.getElementById("login-user").value;
+        var p = document.getElementById("login-pswd").value;
+        user.set({user: u, passwd: p});
+        user.save(user.attributes, { 
+            error: function(model, response, options) {
+                switch (response.status) {
+                    case 200:
+                        setDivAccount();
+                        break;
+                    default:
+                        alert("Authentication failed.");
+                }
+            }
+        });
+    }
+}
+
 /* Gather all add-event functions */
 function addEvents() {
     addClickTabEvent();
     addJoinEvent();
     addSignUpEvent();
+    addLoginEvent();
 }
 
 window.onload = function() {
