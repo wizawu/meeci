@@ -1,7 +1,6 @@
 /* Backbone models */
-SignUp = Backbone.Model.extend({
-    url: "/signup"
-});
+SignUp = Backbone.Model.extend({url: "/signup"});
+Logout = Backbone.Model.extend({url: "/logout"});
 
 User = Backbone.Model.extend({
     defaults: {
@@ -77,6 +76,13 @@ function hideAll() {
     for (var i = 0; i < ids.length; i++) {
         displayElementById(ids[i], "none");
     }
+}
+
+function displayUserTabs(attr) {
+    displayElementById("li-signup", "none");
+    displayElementById("li-repos", attr);
+    displayElementById("li-container", attr);
+    displayElementById("li-account", attr);
 }
 
 /* Decide which to display on top-right corner */
@@ -168,6 +174,8 @@ function addLoginEvent() {
                 switch (response.status) {
                     case 200:
                         setDivAccount();
+                        displayUserTabs("block");
+                        activeTab("tab-console");
                         break;
                     default:
                         alert("Authentication failed.");
@@ -177,12 +185,25 @@ function addLoginEvent() {
     }
 }
 
+/* log out */
+function addLogoutEvent() {
+    var b = document.getElementById("log-out");
+    b.onclick = function() {
+        var logout = new Logout();
+        logout.fetch();
+        setDivAccount();
+        displayUserTabs("none");
+        activeTab("tab-console");
+    }
+}
+
 /* Gather all add-event functions */
 function addEvents() {
     addClickTabEvent();
     addJoinEvent();
     addSignUpEvent();
     addLoginEvent();
+    addLogoutEvent();
 }
 
 window.onload = function() {
