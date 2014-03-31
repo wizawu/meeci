@@ -249,6 +249,12 @@ function addUpdateAccountEvent() {
 }
 
 function loadReposList() {
+    repos.fetch({
+        success: function(model, response, options) {
+        }),
+        error: function(model, response, options) {
+        })
+    });
 }
 
 function addWatchReposEvent() {
