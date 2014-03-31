@@ -134,7 +134,7 @@ app.post("/watch", function(req, res) {
         var repos = repos_owner(giturl)[1];
         if (watch == false) {
             var q = strformat(
-                "DELETE FROM repos WHERE user_='%s' AND repos='%s' AND owner='%s' AND host = %d",
+                "DELETE FROM repos WHERE user_='%s' AND repos='%s' AND owner='%s' AND host=%d",
                 user, repos, owner, host
             );
             return sql_execute(q, function(_) {
@@ -170,6 +170,44 @@ app.get("/repos", function(req, res) {
         sql_execute(q, function(rows) {
             res.json(200, {watched: rows});
         });
+    } else {
+        res.send(400);
+    }
+});
+
+app.get("/repos/options/:host/:owner/:repos", function(req, res) {
+    var user = req.session.user;
+    if (user) {
+        var host = (req.params.host == "github") ? 1 : 2;
+        var owner = req.params.owner;
+        var repos = req.params.repos;
+        var q = strformat(
+            "SELECT * FROM repos WHERE user_='%s' AND repos='%s' AND owner='%s' AND host=%d",
+            user, repos, owner, host
+        );
+        sql_execute(q, function(rows) {
+            res.json(200, {
+                container: rows[0].container,
+                script: rows[0].script
+            });
+        });
+    } else {
+        res.send(400);
+    }
+});
+
+app.post("/repos/options/:host/:owner/:repos", function(req, res) {
+    var user = req.session.user, body = req.body;
+    var cont = body.container, script = body.script;
+    if (user && cont && script) {
+        var host = (req.params.host == "github") ? 1 : 2;
+        var owner = req.params.owner;
+        var repos = req.params.repos;
+        var q = strformat(
+            "UPDATE repos SET container='%s', script='%s' WHERE user_='%s' AND repos='%s' AND owner='%s' AND host=%d",
+            cont, script, user, repos, owner, host
+        );
+        sql_execute(q, function(_) { res.send(200); });
     } else {
         res.send(400);
     }

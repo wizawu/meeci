@@ -284,10 +284,12 @@ function refreshReposList() {
                     img.src = '/images/GitHub-Mark-32px.png';
                     a.href = 'https://github.com/' + fullname;
                     n.setAttribute("giturl", "git@github.com:" + fullname + ".git");
+                    n.setAttribute("dir", "/github/" + fullname);
                 } else {
                     img.src = '/images/Bitbucket-Mark-32px.png';
                     a.href = 'https://bitbucket.org/' + fullname;
                     n.setAttribute("giturl", "git@bitbucket.org:" + fullname + ".git");
+                    n.setAttribute("dir", "/bitbucket/" + fullname);
                 }
                 getChildByTagName(n, 'p').innerHTML = w.descr;
                 getChildByClass(n, 'btn btn-danger').onclick = function() {
@@ -304,7 +306,22 @@ function refreshReposList() {
                     return false;
                 };
                 getChildByClass(n, 'btn btn-success').onclick = function() {
-
+                    var Options = Backbone.Model.extend({
+                        url: "/repos/options" + this.parentNode.getAttribute('dir')
+                    });
+                    var opt = new Options();
+                    opt.fetch({
+                        success: function(model, response, options) {
+                            displayElementById("repos-options");
+                            var c = document.getElementById("repos-opt-cont");
+                            c.value = model.get("container");
+                            var s = document.getElementById("repos-opt-script");
+                            s.value = model.get("script");
+                            var b = document.getElementById("repos-update-butt");
+                            b.setAttribute("url", opt.url);
+                        }
+                    });
+                    return false;
                 };
                 n.style.display = "block";
                 list.appendChild(n);
@@ -343,7 +360,31 @@ function addWatchReposEvent() {
     }
 }
 
-function addReposOptionEvent() {
+function addUpdateReposEvent() {
+    var b = document.getElementById("repos-update-butt");
+    b.onclick = function() {
+        var Options = Backbone.Model.extend({
+            url: b.getAttribute("url")
+        });
+        var opt = new Options();
+        opt.set({
+            container: document.getElementById("repos-opt-cont").value.trim(),
+            script: document.getElementById("repos-opt-script").value.replace(/'/g, "''")
+        });
+        opt.save(opt.attributes, {
+            error: function(model, response, options) {
+                switch(response.status) {
+                    case 200:
+                        alert("Update successfully!");
+                        displayElementById("repos-options", "none");
+                        break;
+                    default:
+                        alert("Incorrect settings.");
+                }
+            }
+        });
+        return false;
+    };
 }
 
 /* Gather all add-event functions */
@@ -356,7 +397,7 @@ function addEvents() {
     addAccountTabEvent();
     addUpdateAccountEvent();
     addWatchReposEvent();
-    addReposOptionEvent();
+    addUpdateReposEvent();
 }
 
 function scrollTop() {

@@ -219,13 +219,14 @@
           <form role="form" id="repos-options" style="display: none">
             <div class="form-group">
               <label>Container</label>
-              <input type="text" class="form-control" placeholder="container@creator">
+              <input type="text" class="form-control"
+               placeholder="user/container" id="repos-opt-cont">
             </div>
             <div class="form-group">
               <label>Script</label>
-              <textarea class="form-control" rows="14"></textarea>
+              <textarea class="form-control" rows="14" id="repos-opt-script"></textarea>
             </div>
-            <button type="button" class="btn btn-primary">Update</button>
+            <button type="button" class="btn btn-primary" id="repos-update-butt">Update</button>
           </form>
           
           <div id="repos-tmpl" class="repos-group" style="display: none">
