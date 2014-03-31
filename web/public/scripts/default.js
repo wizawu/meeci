@@ -1,12 +1,12 @@
 /* Backbone models */
 SignUp = Backbone.Model.extend({url: "/signup"});
 Logout = Backbone.Model.extend({url: "/logout"});
+Watch = Backbone.Model.extend({url: "/watch"});
 Repos = Backbone.Model.extend({
     defaults: {
-        towatch: null,
         watched: []
     },
-    url: "repos"
+    url: "/repos"
 });
 var repos = new Repos();
 
@@ -26,6 +26,17 @@ function getChildByTagName(node, tag) {
     var n = children.length;
     for (var i = 0; i < n; i++) {
         if (children[i].nodeName.toLowerCase() == tag) {
+            return children[i];
+        }
+    }
+}
+
+function getChildByClass(node, classname) {
+    var children = node.childNodes;
+    var n = children.length;
+    for (var i = 0; i < n; i++) {
+        var name = children[i].className;
+        if (name && name.toLowerCase() == classname) {
             return children[i];
         }
     }
@@ -93,6 +104,7 @@ function displayByUser() {
                 e = document.getElementById("current-user");
                 e.innerHTML = model.get("user");
                 displayUserTabs("block");
+                refreshReposList();
             } else {
                 displayElementById("form-login", "block");
                 displayElementById("profile", "none");
@@ -108,6 +120,7 @@ function addJoinEvent() {
     b.onclick = function() {
         displayElementById("li-signup");
         activeTab("tab-signup");
+        return false;
     };
 }
 
@@ -157,6 +170,7 @@ function addSignUpEvent() {
                 }
             }
         });
+        return false;
     }
 }
 
@@ -179,6 +193,7 @@ function addLoginEvent() {
                 }
             }
         });
+        return false;
     }
 }
 
@@ -190,6 +205,7 @@ function addLogoutEvent() {
         logout.fetch();
         displayByUser();
         activeTab("tab-console");
+        return false;
     }
 }
 
@@ -199,6 +215,7 @@ function addAccountTabEvent() {
     b.onclick = function() {
         document.getElementById("acnt-name").value = user.get("name") || "";
         document.getElementById("acnt-email").value = user.get("email") || "";
+        return false;
     }
 }
 
@@ -245,15 +262,57 @@ function addUpdateAccountEvent() {
                 }
             });
         }
+        return false;
     }
 }
 
-function loadReposList() {
+function refreshReposList() {
     repos.fetch({
         success: function(model, response, options) {
-        }),
+            var tmpl = document.getElementById("repos-tmpl");
+            var list = document.getElementById("repos-list");
+            list.innerHTML = "";
+            var watched = repos.get("watched");
+            for (var i in watched) {
+                var w = watched[i];
+                var fullname = w.owner + "/" + w.repos;
+                var n = tmpl.cloneNode(true);
+                var img = getChildByTagName(n, 'img');
+                var a = getChildByTagName(n, 'a');
+                a.innerHTML = fullname;
+                if (w.host == 1) {
+                    img.src = '/images/GitHub-Mark-32px.png';
+                    a.href = 'https://github.com/' + fullname;
+                    n.setAttribute("giturl", "git@github.com:" + fullname + ".git");
+                } else {
+                    img.src = '/images/Bitbucket-Mark-32px.png';
+                    a.href = 'https://bitbucket.org/' + fullname;
+                    n.setAttribute("giturl", "git@bitbucket.org:" + fullname + ".git");
+                }
+                getChildByTagName(n, 'p').innerHTML = w.descr;
+                getChildByClass(n, 'btn btn-danger').onclick = function() {
+                    var watch = new Watch();
+                    watch.set({
+                        giturl: this.parentNode.getAttribute("giturl"),
+                        watch: false
+                    });
+                    watch.save(watch.attributes, {
+                        error: function(model, response, options) {
+                            refreshReposList();
+                        }
+                    });
+                    return false;
+                };
+                getChildByClass(n, 'btn btn-success').onclick = function() {
+
+                };
+                n.style.display = "block";
+                list.appendChild(n);
+            }
+        },
         error: function(model, response, options) {
-        })
+            alert("Failed to read the repository list.");
+        }
     });
 }
 
@@ -266,19 +325,25 @@ function addWatchReposEvent() {
             alert("The URL must begin with 'git@'.");
             return false;
         }
-        repos.set({towatch: i.value.trim()});
-        repos.save(repos.attributes, {
+        var watch = new Watch();
+        watch.set({giturl: i.value.trim(), watch: true});
+        watch.save(watch.attributes, {
             error: function(modle, response, options) {
                 switch (response.status) {
                     case 200:
                         i.value = "";
+                        refreshReposList();
                         break;
                     default:
                         alert("Cannot watch this repository.");
                 }
             }
         });
+        return false;
     }
+}
+
+function addReposOptionEvent() {
 }
 
 /* Gather all add-event functions */
@@ -291,6 +356,7 @@ function addEvents() {
     addAccountTabEvent();
     addUpdateAccountEvent();
     addWatchReposEvent();
+    addReposOptionEvent();
 }
 
 function scrollTop() {

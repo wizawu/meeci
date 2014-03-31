@@ -216,7 +216,7 @@
         </form>
 
         <div id="watched-repos">
-          <form role="form" id="repos-options" style="display: block">
+          <form role="form" id="repos-options" style="display: none">
             <div class="form-group">
               <label>Container</label>
               <input type="text" class="form-control" placeholder="container@creator">
@@ -227,22 +227,16 @@
             </div>
             <button type="button" class="btn btn-primary">Update</button>
           </form>
-
-          <div class="repos-group">
-            <img src="/images/GitHub-Mark-32px.png" alt="GitHub">
+          
+          <div id="repos-tmpl" class="repos-group" style="display: none">
+            <img src="/images/GitHub-Mark-32px.png">
             <a href="https://github.com/drone/drone">drone/drone</a>
             <p>Drone is a Continuous Integration platform built on Docker</p>
-            <button type="button" class="btn btn-danger" id="unwatch-button">Unwatch</button>
-            <button type="button" class="btn btn-success" id="options-button">Options</button>
+            <button type="button" class="btn btn-danger">Unwatch</button>
+            <button type="button" class="btn btn-success">Options</button>
           </div>
+          <div id="repos-list"></div>
 
-          <div class="repos-group">
-            <img src="/images/Bitbucket-Mark-32px.png" alt="Bitbucket">
-            <a href="https://bitbucket.org/nikratio/s3ql">nikratio/s3ql</a>
-            <p>S3QL is a file system that stores all its data online</p>
-            <button type="button" class="btn btn-danger" id="unwatch-button">Unwatch</button>
-            <button type="button" class="btn btn-success" id="options-button">Options</button>
-          </div>
         </div>
 
       </div>

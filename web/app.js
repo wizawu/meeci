@@ -124,14 +124,23 @@ app.get("/user", function(req, res) {
     }
 });
 
-app.post("/repos", function(req, res) {
+app.post("/watch", function(req, res) {
     var user = req.session.user;
-    var towatch = req.body.towatch;
-    if (user && towatch) {
-        var host = resolve_git(towatch);
+    var giturl = req.body.giturl, watch = req.body.watch;
+    if (user && giturl) {
+        var host = resolve_git(giturl);
         if (host == -1) return res.send(406);
-        var owner = repos_owner(towatch)[0];
-        var repos = repos_owner(towatch)[1];
+        var owner = repos_owner(giturl)[0];
+        var repos = repos_owner(giturl)[1];
+        if (watch == false) {
+            var q = strformat(
+                "DELETE FROM repos WHERE user_='%s' AND repos='%s' AND owner='%s' AND host = %d",
+                user, repos, owner, host
+            );
+            return sql_execute(q, function(_) {
+                res.send(200);
+            });
+        }
         if (host == 1) {
             var path = strformat("/repos/%s/%s", owner, repos);
         } else {
@@ -155,6 +164,15 @@ app.post("/repos", function(req, res) {
 });
 
 app.get("/repos", function(req, res) {
+    var user = req.session.user;
+    if (user) {
+        var q = strformat("SELECT * FROM repos WHERE user_ = '%s'", user);
+        sql_execute(q, function(rows) {
+            res.json(200, {watched: rows});
+        });
+    } else {
+        res.send(400);
+    }
 });
 
 var port = process.env.MEECI_PORT || 3780;
@@ -197,7 +215,7 @@ function gravatar_url(email) {
 
 function resolve_git(url) {
     var github = /git@github.com:\w+\/\S+\.git/gi;
-    var bitbucket = /git@bitbucket.org\/\w+\/\S+\.git/gi;
+    var bitbucket = /git@bitbucket.org:\w+\/\S+\.git/gi;
     if (github.test(url)) return 1;
     else if (bitbucket.test(url)) return 2;
     else return -1;
@@ -297,7 +315,7 @@ function sql_execute(query, callback) {
         client.query(query, function(err, res) {
             release();
             if (err) return errlog(err);
-            if (callback) callback();
+            if (callback) callback(res.rows);
         });
     });
 }

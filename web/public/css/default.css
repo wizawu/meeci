@@ -313,13 +313,13 @@ a:focus {
     font-size: 13px;
 }
 
-.repos-group #unwatch-button {
+.repos-group .btn.btn-danger {
     position: absolute;
     top: 7px;
     right: 5px;
 }
 
-.repos-group #options-button {
+.repos-group .btn.btn-success {
     position: absolute;
     top: 38px;
     right: 5px;
