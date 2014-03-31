@@ -8,6 +8,7 @@
   <link href="css/default.css" rel="stylesheet">
 
   <script src="scripts/bootstrap.min.js"></script>
+  <script src="scripts/jquery-1.11.0.min.js"></script>
   <script src="scripts/underscore-min.js"></script>
   <script src="scripts/backbone-min.js"></script>
   <script src="scripts/default.js"></script>
@@ -137,16 +138,16 @@
         <form role="form">
           <div class="form-group">
             <label>Username</label>
-            <input type="text" class="form-control">
+            <input type="text" class="form-control" id="sign-user">
           </div>
           <div class="form-group">
             <label>Email</label>
-            <input type="email" class="form-control">
+            <input type="email" class="form-control" id="sign-email">
           </div>
           <div class="form-group">
             <label>Password (Twice)</label>
-            <input type="password" class="form-control">
-            <input type="password" class="form-control">
+            <input type="password" class="form-control" id="sign-pswd1">
+            <input type="password" class="form-control" id="sign-pswd2">
           </div>
           <button type="button" class="btn btn-primary">Submit</button>
         </form>
