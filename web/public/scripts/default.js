@@ -1,6 +1,14 @@
 /* Backbone models */
 SignUp = Backbone.Model.extend({url: "/signup"});
 Logout = Backbone.Model.extend({url: "/logout"});
+Repos = Backbone.Model.extend({
+    defaults: {
+        towatch: null,
+        watched: []
+    },
+    url: "repos"
+});
+var repos = new Repos();
 
 User = Backbone.Model.extend({
     defaults: {
@@ -10,8 +18,7 @@ User = Backbone.Model.extend({
     },
     url: "/user"
 });
-
-var user = new User;
+var user = new User();
 
 /* Return the first child with the specified tag name */
 function getChildByTagName(node, tag) {
@@ -67,26 +74,15 @@ function addClickTabEvent() {
     }
 }
 
-/* Hide all elements not in common */
-function hideAll() {
-    var ids = [
-        "form-login", "profile",
-        "li-repos", "li-container", "li-account", "li-signup"
-    ];
-    for (var i = 0; i < ids.length; i++) {
-        displayElementById(ids[i], "none");
-    }
-}
-
 function displayUserTabs(attr) {
-    displayElementById("li-signup", "none");
     displayElementById("li-repos", attr);
     displayElementById("li-container", attr);
     displayElementById("li-account", attr);
+    displayElementById("li-signup", "none");
 }
 
-/* Decide which to display on top-right corner */
-function setDivAccount() {
+/* Display divs according to whether user has logged in */
+function displayByUser() {
     user.fetch({
         success: function(model, response, options) {
             if (model.get("user")) {
@@ -96,9 +92,11 @@ function setDivAccount() {
                 e.src = model.get("gravatar");
                 e = document.getElementById("current-user");
                 e.innerHTML = model.get("user");
+                displayUserTabs("block");
             } else {
                 displayElementById("form-login", "block");
                 displayElementById("profile", "none");
+                displayUserTabs("none");
             }
         }
     });
@@ -117,11 +115,11 @@ function addJoinEvent() {
 function addSignUpEvent() {
     var f = getChildByTagName(document.getElementById("tab-signup"), "form");
     var b = getChildByTagName(f, "button");
-    var inputs = ["sign-user", "sign-email", "sign-pswd1", "sign-pswd2"];
-    for (var i in inputs) {
-        inputs[i] = document.getElementById(inputs[i]);
-    }
     b.onclick = function() {
+        var inputs = ["sign-user", "sign-email", "sign-pswd1", "sign-pswd2"];
+        for (var i in inputs) {
+            inputs[i] = document.getElementById(inputs[i]);
+        }
         if (inputs[2].value != inputs[3].value) {
             alert("The two passwords are not consistent.");
             inputs[2].value = inputs[3].value = "";
@@ -173,8 +171,7 @@ function addLoginEvent() {
             error: function(model, response, options) {
                 switch (response.status) {
                     case 200:
-                        setDivAccount();
-                        displayUserTabs("block");
+                        displayByUser();
                         activeTab("tab-console");
                         break;
                     default:
@@ -185,15 +182,96 @@ function addLoginEvent() {
     }
 }
 
-/* log out */
+/* Log out */
 function addLogoutEvent() {
     var b = document.getElementById("log-out");
     b.onclick = function() {
         var logout = new Logout();
         logout.fetch();
-        setDivAccount();
-        displayUserTabs("none");
+        displayByUser();
         activeTab("tab-console");
+    }
+}
+
+/* Display name and email */
+function addAccountTabEvent() {
+    var b = document.getElementById("li-account");
+    b.onclick = function() {
+        document.getElementById("acnt-name").value = user.get("name") || "";
+        document.getElementById("acnt-email").value = user.get("email") || "";
+    }
+}
+
+function addUpdateAccountEvent() {
+    document.getElementById("acnt-email").setAttribute("readonly", "readonly");
+    var b = document.getElementById("acnt-update");
+    b.onclick = function() {
+        var inputs = ["acnt-name", "acnt-pswd0", "acnt-pswd1", "acnt-pswd2"];
+        for (var i in inputs) {
+            inputs[i] = document.getElementById(inputs[i]);
+        }
+        if (inputs[1].value.trim() == "") {
+            alert("Current Password cannot be empty.");
+            return false;
+        } else if (inputs[2].value != inputs[3].value) {
+            alert("The two new passwords are not consistent.");
+            inputs[2].value = inputs[3].value = "";
+            return false;
+        } else {
+            user.set({
+                name: inputs[0].value.trim(),
+                passwd: inputs[1].value.trim(),
+                new_passwd: inputs[2].value.trim()
+            });
+            user.save(user.attributes, {
+                error: function(model, response, options) {
+                    switch (response.status) {
+                        case 200:
+                            alert("Update successfully!");
+                            inputs[1].value = "";
+                            inputs[2].value = inputs[3].value = "";
+                            break;
+                        case 401:
+                            alert("The current password is incorrect.");
+                            inputs[1].value = "";
+                            break;
+                        case 402:
+                            alert("Invalid new password.");
+                            inputs[2].value = inputs[3].value = "";
+                            break;
+                        default:
+                            alert(response.status + " " + response.statusText);
+                    }
+                }
+            });
+        }
+    }
+}
+
+function loadReposList() {
+}
+
+function addWatchReposEvent() {
+    var b = document.getElementById("watch-butt");
+    b.onclick = function() {
+        var i = document.getElementById("watch-url");
+        if (i.value.trim() == "") return false;
+        if (i.value.search("git@") != 0) {
+            alert("The URL must begin with 'git@'.");
+            return false;
+        }
+        repos.set({towatch: i.value.trim()});
+        repos.save(repos.attributes, {
+            error: function(modle, response, options) {
+                switch (response.status) {
+                    case 200:
+                        i.value = "";
+                        break;
+                    default:
+                        alert("Cannot watch this repository.");
+                }
+            }
+        });
     }
 }
 
@@ -204,10 +282,16 @@ function addEvents() {
     addSignUpEvent();
     addLoginEvent();
     addLogoutEvent();
+    addAccountTabEvent();
+    addUpdateAccountEvent();
+    addWatchReposEvent();
+}
+
+function scrollTop() {
+    window.scrollTo(0, 0);
 }
 
 window.onload = function() {
-    hideAll();
-    setDivAccount();
     addEvents();
+    displayByUser();
 }

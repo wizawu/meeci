@@ -68,7 +68,25 @@ app.post("/user", function(req, res) {
     var user = body.user, passwd = body.passwd;
     if (user && passwd) {
         sql_auth(user, passwd, function(code) {
-            if (code == 200) req.session.user = user;
+            if (code == 200) {
+                req.session.user = user;
+                var name = body.name, new_passwd = body.new_passwd, q;
+                if (name) {
+                    q = strformat(
+                        "UPDATE users SET name='%s' WHERE user_='%s'",
+                        name, user
+                    );
+                    sql_execute(q);
+                }
+                if (new_passwd) {
+                    passwd = encrypt(new_passwd);
+                    q = strformat(
+                        "UPDATE users SET passwd='%s', salt='%s' WHERE user_='%s'",
+                        passwd.hash, passwd.salt, user
+                    );
+                    sql_execute(q);
+                }
+            }
             res.send(code);
         });
     } else {
@@ -85,6 +103,7 @@ app.get("/user", function(req, res) {
             if (err) return errlog(err);
             var q = strformat("SELECT * FROM users WHERE user_ = '%s'", user); 
             client.query(q, function(err, _res) {
+                release();
                 if (err) {
                     res.send(500);
                     return errlog(err);
@@ -94,12 +113,16 @@ app.get("/user", function(req, res) {
                         user: user,
                         name: row.name,
                         email: row.email,
-                        gravatar: gravatarURL(row.email)
+                        gravatar: gravatarURL(row.email),
+                        passwd: null
                     });
                 }
             });
         });
     }
+});
+
+app.post("/repos", function(req, res) {
 });
 
 var http = require("http");
@@ -175,7 +198,6 @@ function sql_insert(table, fields, values, callback) {
 
 function sql_auth(user, passwd, callback) {
     var q = strformat("SELECT * FROM users WHERE user_ = '%s'", user);
-    console.log(q);
     pg.connect(pgdb, function(err, client, release) {
         if (err) return errlog(err);
         client.query(q, function(err, res) {
@@ -192,6 +214,17 @@ function sql_auth(user, passwd, callback) {
                     callback(passwordMatch(passwd, hash, salt) ? 200:401);
                 }
             }
+        });
+    });
+}
+
+function sql_execute(query, callback) {
+    pg.connect(pgdb, function(err, client, release) {
+        if (err) return errlog(err);
+        client.query(query, function(err, res) {
+            release();
+            if (err) return errlog(err);
+            if (callback) callback();
         });
     });
 }
