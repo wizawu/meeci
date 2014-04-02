@@ -71,7 +71,12 @@ a:focus {
     left: 10px;
     text-align: left;
     font-size: 14px;
+    color: #666;
+}
+
+.task-left a {
     color: #001941;
+    font-weight: bold;
 }
 
 .task-right {
@@ -80,7 +85,7 @@ a:focus {
     right: 10px;
     text-align: right;
     font-size: 14px;
-    color: #88b;
+    color: #666;
 }
 
 #github-link {

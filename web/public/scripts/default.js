@@ -1,6 +1,7 @@
 /* Backbone models */
 SignUp = Backbone.Model.extend({url: "/signup"});
 Logout = Backbone.Model.extend({url: "/logout"});
+Queue = Backbone.Model.extend({url: "/queue"});
 Watch = Backbone.Model.extend({url: "/watch"});
 Repos = Backbone.Model.extend({
     defaults: {
@@ -9,6 +10,11 @@ Repos = Backbone.Model.extend({
     url: "/repos"
 });
 var repos = new Repos();
+Build = Backbone.Model.extend({
+    defaults: {
+    }
+});
+var build = new Build();
 
 User = Backbone.Model.extend({
     defaults: {
@@ -363,6 +369,7 @@ function addWatchReposEvent() {
 function addUpdateReposEvent() {
     var b = document.getElementById("repos-update-butt");
     b.onclick = function() {
+        window.scrollTo(0, 0);
         var Options = Backbone.Model.extend({
             url: b.getAttribute("url")
         });
@@ -387,6 +394,109 @@ function addUpdateReposEvent() {
     };
 }
 
+function refreshTaskQueue() {
+    var q = new Queue();
+    q.fetch({
+        success: function(model, response, options) {
+            var d = document.getElementById("queue");
+            var t = document.getElementById("task-tmpl");
+            d.innerHTML = "";
+            for (var i in model.get("queue")) {
+                var j = model.get("queue")[i];
+                var n = t.cloneNode(true); 
+                var href = j.owner + '/' + j.repository;
+                if (j.url.search("git@github") == 0) {
+                    n.className = "github-task";
+                    href = 'https://github.com/' + href;
+                } else {
+                    n.className = "bitbucket-task";
+                    href = 'https://bitbucket.org/' + href;
+                }
+                var m = Math.floor((new Date).getTime()/1000) - j.start;
+                var s = m % 60;
+                if (s < 10) s = "0" + String(s);
+                m = (m - s) / 60;
+                n.innerHTML = '<span class="task-left"><a href="' + href
+                    + '">' + j.owner + '/' + j.repository
+                    + '</a><br>' + j.worker + '</span>'
+                    + '<span class="task-right">' + j.build + '<br>'
+                    + '<span class="task-time">' + m + ':' + s 
+                    + '</span>' + '</span><br><br>';
+                n.style.display = "block";
+                n.onclick = function() {
+                    activeTab('tab-console');
+                    setConsole();
+                    return false;
+                };
+                d.appendChild(n);
+            }
+        }
+    });
+}
+
+function refreshTaskTime() {
+    var ts = document.getElementsByClassName('task-time');
+    for (var i in ts) {
+        var t = ts[i];
+        var m = Number(t.innerHTML.split(':')[0]);
+        var s = Number(t.innerHTML.split(':')[1]) + 1;
+        if (s == 60) {
+            t.innerHTML = m + 1 + ':00';
+        } else if (s < 10) {
+            t.innerHTML = m + ':0' + s;
+        } else {
+            t.innerHTML = m + ':' + s; 
+        }
+    }
+}
+
+function refreshContList() {
+    var ContList = Backbone.Model.extend({
+        url: "/containers"
+    });
+    var contlist= new ContList();
+    contlist.fetch({
+        success: function(model, response, options) {
+            if (model.get('list').length == 0) {
+                displayElementById("cont-table", "none");
+                return;
+            } else {
+                displayElementById("cont-table", "block");
+            }
+            var t = document.getElementById('cont-list');
+            t.innerHTML = "";
+            for (var i in model.get('list')) {
+                var r = model.get('list')[i];
+                var s = "<tr>";
+                s += '<td><a href="/container/' + r.name + '">' + r.name + '</a></td>';
+                s += '<td>' + r.descr + '</td>';
+                s += '<td>' + r.size + ' MB</td>';
+                s += '<td>' + r.time.substr(0,10) + " " + r.time.substr(11,8) + '</td>';
+                s += '<td><a href="' + '/logs/container/' + r.id + '">';
+                if (r.size == 0) {
+                    s += 'Building</a></td>';
+                } else if (r.size > 0) {
+                    s += 'Normal</a></td>';
+                } else {
+                    s += 'Error</a></td>';
+                }
+                s += '<td><button type="button" class="btn btn-danger" '
+                     + 'name="' + r.name + '">Remove</button></td>';
+                s += "</tr>";
+                t.innerHTML += s;
+            }
+        }
+    });
+}
+
+function addContTabEvent() {
+    var b = document.getElementById('li-container');
+    b.onclick = function() {
+        refreshContList();
+        return false;
+    };
+}
+
 /* Gather all add-event functions */
 function addEvents() {
     addClickTabEvent();
@@ -398,13 +508,13 @@ function addEvents() {
     addUpdateAccountEvent();
     addWatchReposEvent();
     addUpdateReposEvent();
-}
-
-function scrollTop() {
-    window.scrollTo(0, 0);
+    addContTabEvent();
 }
 
 window.onload = function() {
     addEvents();
     displayByUser();
+    refreshTaskQueue();
+    window.setInterval(function(){ refreshTaskQueue(); }, 10000);
+    window.setInterval(function(){ refreshTaskTime(); }, 1000);
 }

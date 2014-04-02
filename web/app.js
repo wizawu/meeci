@@ -1,4 +1,5 @@
 var crypto = require("crypto");
+var fs = require("fs");
 var http = require("http");
 var https = require("https");
 var util = require("util");
@@ -7,6 +8,16 @@ var pg = require("pg.js");
 
 var strformat = util.format;
 var pgdb = "postgres://meeci:IoMQwf5E7u8@0.0.0.0/meeci";
+var meecidir = "/var/lib/meeci";
+var tasks = {queue: []};
+tasks.queue.push({
+    url: 'git@github.com:wizawu/meeci.git',
+    start: 1396334969,
+    owner: 'wizawu',
+    repository: 'meeci',
+    worker: '192.168.3.39',
+    build: 99
+});
 
 var app = express();
 
@@ -55,9 +66,17 @@ app.post("/signup", function(req, res) {
                 "'%s', '%s', '%s', '%s', 1",
                 user, email, passwd.hash, passwd.salt
             );
+            // TODO: do not use the two sql_exist above
             sql_insert(
                 "users", "user_, email, passwd, salt, status",
-                values, function(code) { res.send(code); }
+                values, function(code) {
+                    if (code == 200) {
+                        fs.mkdir(meecidir + '/containers/wizawu', function(err) {
+                            console.log(err);
+                        });
+                    }
+                    res.send(code);
+                }
             );
         }
     } else {
@@ -211,6 +230,66 @@ app.post("/repos/options/:host/:owner/:repos", function(req, res) {
     } else {
         res.send(400);
     }
+});
+
+app.get("/queue", function(req, res) {
+    res.json(200, tasks);
+});
+
+app.get("/task", function(req, res) {
+    if (tasks.queue.length == 0) {
+        res.send(204);
+    } else {
+        tasks.queue[0].worker = req.ip;
+        tasks.queue[0].start = Math.floor((new Date).getTime()/1000);
+        res.json(200, tasks.queue[0]);
+    }
+});
+
+app.get("/containers", function(req, res) {
+    var user = req.session.user;
+    if (user) {
+        var q = strformat("SELECT * FROM container WHERE user_ = '%s'", user);
+        sql_execute(q, function(rows) {
+            res.json(200, { list: rows });
+        });
+    } else {
+        res.send(400);
+    }
+});
+
+app.get("/container/:name", function(req, res) {
+    var user = req.session.user, name = req.params.name;
+    if (user && name) {
+        var path = strformat(meecidir + "/containers/%s/%s.sh", user, name);
+        fs.readFile(path, function(err, data) {
+            if (err) {
+                errlog(err);
+                res.send(404);
+            } else {
+                res.set('Content-Type', 'text/plain');
+                res.send(200, data);
+            }
+        });
+    } else {
+        res.send(400);
+    }
+});
+
+app.get("/logs/container/:id", function(req, res) {
+    var path = strformat(meecidir + "/logs/container/%d.log", req.params.id);
+    fs.readFile(path, function(err, data) {
+        if (err) {
+            errlog(err);
+            res.send(404);
+        } else {
+            res.set('Content-Type', 'text/plain');
+            res.send(200, data);
+        }
+    });
+});
+
+app.post("/hooks/:user", function(req, res) {
 });
 
 var port = process.env.MEECI_PORT || 3780;

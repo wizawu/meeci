@@ -20,60 +20,12 @@
   <a href=""><img id="logo" src="images/logo.png" alt="Meeci logo"></a>
 
   <div id="queue-box">
-  <div id="queue">
-
-    <div class="github-task">
-      <span class="task-left">drone/drone<br>&gt;&gt; worker-01</span>
-      <span class="task-right">21<br>14:39</span>
+    <div class="github-task" style="display: none" id="task-tmpl">
+      <span class="task-left">drone/drone<br>192.168.3.39</span>
+      <span class="task-right">21<br><span class="task-time">14:39</span></span>
       <br><br>
     </div>
-    <div class="bitbucket-task">
-      <span class="task-left">drone/drone<br>&gt;&gt; worker-01</span>
-      <span class="task-right">21<br>14:39</span>
-      <br><br>
-    </div>
-    <div class="github-task">
-      <span class="task-left">drone/drone<br>&gt;&gt; worker-01</span>
-      <span class="task-right">21<br>14:39</span>
-      <br><br>
-    </div>
-    <div class="bitbucket-task">
-      <span class="task-left">drone/drone<br>&gt;&gt; worker-01</span>
-      <span class="task-right">21<br>14:39</span>
-      <br><br>
-    </div>
-    <div class="github-task">
-      <span class="task-left">drone/drone<br>&gt;&gt; worker-01</span>
-      <span class="task-right">21<br>14:39</span>
-      <br><br>
-    </div>
-    <div class="bitbucket-task">
-      <span class="task-left">drone/drone<br>&gt;&gt; worker-01</span>
-      <span class="task-right">21<br>14:39</span>
-      <br><br>
-    </div>
-    <div class="github-task">
-      <span class="task-left">drone/drone<br>&gt;&gt; worker-01</span>
-      <span class="task-right">21<br>14:39</span>
-      <br><br>
-    </div>
-    <div class="bitbucket-task">
-      <span class="task-left">drone/drone<br>&gt;&gt; worker-01</span>
-      <span class="task-right">21<br>14:39</span>
-      <br><br>
-    </div>
-    <div class="github-task">
-      <span class="task-left">drone/drone<br>&gt;&gt; worker-01</span>
-      <span class="task-right">21<br>14:39</span>
-      <br><br>
-    </div>
-    <div class="bitbucket-task">
-      <span class="task-left">drone/drone<br>&gt;&gt; worker-01</span>
-      <span class="task-right">21<br>14:39</span>
-      <br><br>
-    </div>
-
-  </div>
+    <div id="queue"></div>
   </div>
 
   <div id="github-link">
@@ -243,7 +195,7 @@
       </div>
 
       <div id="tab-container" style="display:none">
-        <table class="table table-striped table-hover">
+        <table class="table table-striped table-hover" id="cont-table" style="display:none">
           <thead>
             <tr>
               <th width="20%">Name</th>
@@ -254,24 +206,7 @@
               <th width="5%"></th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>debian-postgresql</td>
-              <td>Debian 7.3 with PostgreSQL 9.2</td>
-              <td>120 MB</td>
-              <td>2014/03/18 14:47</td>
-              <td>Normal</td>
-              <td><button type="button" class="btn btn-danger">Remove</button></td>
-            </tr>
-            <tr>
-              <td>debian-mongodb</td>
-              <td>Debian 7.3 with MongoDB 2.4.9</td>
-              <td>130 MB</td>
-              <td>2014/03/18 14:47</td>
-              <td>Normal</td>
-              <td><button type="button" class="btn btn-danger">Remove</button></td>
-            </tr>
-          </tbody>
+          <tbody id="cont-list"></tbody>
         </table>
         <form role="form">
           <div class="form-group">
