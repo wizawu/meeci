@@ -4,26 +4,35 @@ Logout = Backbone.Model.extend({url: "/logout"});
 Queue = Backbone.Model.extend({url: "/queue"});
 Watch = Backbone.Model.extend({url: "/watch"});
 Repos = Backbone.Model.extend({
-    defaults: {
-        watched: []
-    },
+    defaults: {watched: []},
     url: "/repos"
 });
-var repos = new Repos();
 Build = Backbone.Model.extend({
     defaults: {
-    }
+        id: null,
+        repository: 'Meeci',
+        desc: null,
+        owner: null,
+        host: null,
+        build: null,
+        start: null,
+        container: null,
+        worker: null,
+        commit: null,
+        committer: null
+    },
 });
-var build = new Build();
-
 User = Backbone.Model.extend({
     defaults: {
-        "user" : null,
-        "name" : null,
-        "email": null
+        user : null,
+        name : null,
+        email: null
     },
     url: "/user"
 });
+
+var repos = new Repos();
+var build = new Build();
 var user = new User();
 
 /* Return the first child with the specified tag name */
@@ -332,6 +341,23 @@ function refreshReposList() {
                 n.style.display = "block";
                 list.appendChild(n);
             }
+
+            var gs = document.getElementsByClassName('repos-group');
+            for (var i in gs) {
+                var g = gs[i];
+                g.onclick = function() {
+                    if (this.getAttribute('dir') == null) {
+                        return false;
+                    }
+                    var args = this.getAttribute('dir').split('/');
+                    refreshHistory(args[1], args[2], args[3]);
+                    activeTab('tab-history');
+                    document.getElementById('repos-name').innerHTML = args[3];
+                    document.getElementById('repos-desc').innerHTML = 
+                        getChildByTagName(this, 'p').innerHTML;
+                    return false;
+                }
+            }
         },
         error: function(model, response, options) {
             alert("Failed to read the repository list.");
@@ -544,8 +570,42 @@ function addCurrentUserEvent() {
     var e = document.getElementById("current-user");
     e.onclick = function() {
         activeTab('tab-account');
+        document.getElementById("acnt-name").value = user.get("name") || "";
+        document.getElementById("acnt-email").value = user.get("email") || "";
         return false;
     };
+}
+
+function refreshHistory(host, owner, repos) {
+    var history = new Backbone.Model;
+    history.url = '/history/' + host + '/' + owner + '/' + repos;
+    history.fetch({
+        success: function(model, response, options) {
+            var t = document.getElementById('build-list');
+            t.innerHTML = "";
+            for (var i in model.get('list')) {
+                var r = model.get('list')[i];
+                if (r.host == 1) {
+                    var site = "https://github.com/" + r.owner;
+                } else {
+                    var site = "https://bitbucket.org/" + r.owner;
+                }
+                var s = '<tr>';
+                s += '<td><a href="/logs/build/' + r.id + '">' + r.build + '</a></td>';
+                s += '<td>' + r.message + '</td>';
+                s += '<td><a href="' + site + '/' + r.repos + '/commit/' + r.commit
+                     + '">' + r.commit.substr(0,7) + '(' + r.branch + ')</a></td>';
+                s += '<td><a href="' + site + '">' + r.committer + '</a></td>';
+                s += '<td>' + r.start.substr(0,10) + " " + r.start.substr(11,8)+ '</td>';
+                var sec = r.duration % 60; 
+                var min = (r.duration - sec) / 60;
+                if (sec < 10) sec = '0' + String(sec);
+                s += '<td>' + min + ':' + sec + '</td>';
+                s += '</tr>';
+                t.innerHTML += s;
+            }
+        }
+    });
 }
 
 /* Gather all add-event functions */

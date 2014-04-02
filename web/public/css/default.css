@@ -237,11 +237,12 @@ a:focus {
     top: 80px;
     width: 98%;
     max-width: 880px;
+    min-height: 240px;
     padding: 10px;
     color: #f0f0f0;
     background-color: #101010;
     font-family: Monospace;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 #tab-history {
@@ -279,7 +280,7 @@ a:focus {
 
 #repos-options * textarea {
     font-family: Monospace;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 #repos-options button {
@@ -349,6 +350,7 @@ a:focus {
 
 #container-script {
     font-family: Monospace;
+    font-size: 12px;
 }
 
 #tab-container * textarea {

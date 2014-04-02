@@ -380,6 +380,21 @@ app.post("/destroy/:name", function(req, res) {
     }
 });
 
+app.get("/history/:host/:owner/:repos", function(req, res) {
+    var host = req.params.host, owner = req.params.owner, repos = req.params.repos;
+    if (host && owner && repos) {
+        var q = strformat(
+            "SELECT * FROM build WHERE repos='%s' AND owner='%s' AND host=%d",
+            repos, owner, (host == 'github' ? 1 : 2)
+        );
+        sql_execute(q, function(rows) {
+            res.json(200, {list: rows});
+        });
+    } else {
+        res.send(400);
+    }
+});
+
 app.post("/hooks/:user", function(req, res) {
 });
 
