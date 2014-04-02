@@ -376,7 +376,7 @@ function addUpdateReposEvent() {
         var opt = new Options();
         opt.set({
             container: document.getElementById("repos-opt-cont").value.trim(),
-            script: document.getElementById("repos-opt-script").value.replace(/'/g, "''")
+            script: document.getElementById("repos-opt-script").value
         });
         opt.save(opt.attributes, {
             error: function(model, response, options) {
@@ -403,6 +403,7 @@ function refreshTaskQueue() {
             d.innerHTML = "";
             for (var i in model.get("queue")) {
                 var j = model.get("queue")[i];
+                if (j.type == "container") continue;
                 var n = t.cloneNode(true); 
                 var href = j.owner + '/' + j.repository;
                 if (j.url.search("git@github") == 0) {
@@ -470,15 +471,15 @@ function refreshContList() {
                 var s = "<tr>";
                 s += '<td><a href="/container/' + r.name + '">' + r.name + '</a></td>';
                 s += '<td>' + r.descr + '</td>';
-                s += '<td>' + r.size + ' MB</td>';
+                s += '<td>' + (r.size < 0 ? '-' : (r.size + ' MB')) + '</td>';
                 s += '<td>' + r.time.substr(0,10) + " " + r.time.substr(11,8) + '</td>';
-                s += '<td><a href="' + '/logs/container/' + r.id + '">';
+                var a = '<td><a href="' + '/logs/container/' + r.id + '">';
                 if (r.size == 0) {
-                    s += 'Building</a></td>';
+                    s += '<td>Building</td>';
                 } else if (r.size > 0) {
-                    s += 'Normal</a></td>';
+                    s += a + 'Normal</a></td>';
                 } else {
-                    s += 'Error</a></td>';
+                    s += a + 'Error</a></td>';
                 }
                 s += '<td><button type="button" class="btn btn-danger" '
                      + 'name="' + r.name + '">Remove</button></td>';
@@ -497,6 +498,41 @@ function addContTabEvent() {
     };
 }
 
+function addCreateContEvent() {
+    var b = document.getElementById('create-cont');
+    b.onclick = function() {
+        var n = document.getElementById('container-name');
+        var d = document.getElementById('container-desc');
+        var s = document.getElementById('container-script');
+        if (n.value.trim() == "") {
+            alert("Please specify the name of your container.");
+            return false;
+        }
+        var Container = Backbone.Model.extend({url: '/container'});
+        var cont = new Container();
+        cont.set({
+            name: n.value.trim(),
+            desc: d.value,
+            script: s.value
+        });
+        cont.save(cont.attributes, {
+            error: function(model, response, options) {
+                n.value = d.value = s.value = "";
+                refreshContList();
+            }
+        });
+        return false;
+    };
+}
+
+function addCurrentUserEvent() {
+    var e = document.getElementById("current-user");
+    e.onclick = function() {
+        activeTab('tab-account');
+        return false;
+    };
+}
+
 /* Gather all add-event functions */
 function addEvents() {
     addClickTabEvent();
@@ -509,6 +545,8 @@ function addEvents() {
     addWatchReposEvent();
     addUpdateReposEvent();
     addContTabEvent();
+    addCreateContEvent();
+    addCurrentUserEvent();
 }
 
 window.onload = function() {

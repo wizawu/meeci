@@ -4,22 +4,19 @@ var http = require("http");
 var https = require("https");
 var util = require("util");
 var express = require("express");
+var memcache = require("memcache");
 var pg = require("pg.js");
 
 var strformat = util.format;
 var pgdb = "postgres://meeci:IoMQwf5E7u8@0.0.0.0/meeci";
+var mcclient = new memcache.Client(11211, 'localhost');
 var meecidir = "/var/lib/meeci";
 var tasks = {queue: []};
-tasks.queue.push({
-    url: 'git@github.com:wizawu/meeci.git',
-    start: 1396334969,
-    owner: 'wizawu',
-    repository: 'meeci',
-    worker: '192.168.3.39',
-    build: 99
-});
-
 var app = express();
+
+mcclient.on('connect', function() { console.log("Connect to Memcache"); });
+mcclient.on('error', function(err) { console.error(err); });
+mcclient.connect();
 
 app.use(express.static("./public"));
 app.use(express.logger({
@@ -217,7 +214,7 @@ app.get("/repos/options/:host/:owner/:repos", function(req, res) {
 
 app.post("/repos/options/:host/:owner/:repos", function(req, res) {
     var user = req.session.user, body = req.body;
-    var cont = body.container, script = body.script;
+    var cont = body.container, script = body.script.replace(/'/g, "''");
     if (user && cont && script) {
         var host = (req.params.host == "github") ? 1 : 2;
         var owner = req.params.owner;
@@ -240,9 +237,55 @@ app.get("/task", function(req, res) {
     if (tasks.queue.length == 0) {
         res.send(204);
     } else {
-        tasks.queue[0].worker = req.ip;
-        tasks.queue[0].start = Math.floor((new Date).getTime()/1000);
-        res.json(200, tasks.queue[0]);
+        for (var i in tasks.queue) {
+            if (tasks.queue[i].worker == null) {
+                tasks.queue[i].worker = req.ip;
+                tasks.queue[i].start = Math.floor((new Date).getTime()/1000);
+                return res.json(200, tasks.queue[i]);
+            }
+        }
+        res.send(204);
+    }
+});
+
+app.post("/container", function(req, res) {
+    var user = req.session.user, body = req.body;
+    var name = body.name, desc = body.desc, script = body.script;
+    if (user && name && check_letter(name, "-.")) {
+        sql_insert(
+            "container", "user_,name,descr,size,time",
+            strformat("'%s','%s','%s',0,now()", user, name, desc),
+            function(code) {
+                if (code == 200) {
+                    var path = strformat(meecidir + "/containers/%s/%s.sh", user, name);
+                    fs.writeFile(path, script, function(err) {
+                        if (err) {
+                            errlog(err);
+                            res.send(500);
+                        } else {
+                            var q = strformat(
+                                "SELECT id FROM container WHERE user_='%s' AND name='%s'",
+                                user, name
+                            );
+                            sql_execute(q, function(rows) {
+                                var id = rows[0].id;
+                                tasks.queue.push({
+                                    user: user,
+                                    type: 'container',
+                                    id: id,
+                                    container: name
+                                });
+                                res.send(200);
+                            });
+                        }
+                    });
+                } else {
+                    res.send(code);
+                }
+            }
+        );
+    } else {
+        res.send(400);
     }
 });
 
@@ -289,6 +332,35 @@ app.get("/logs/container/:id", function(req, res) {
     });
 });
 
+app.post("/finish/:type/:id", function(req, res) {
+    var type = req.params.type, id = req.params.id;
+    if (! remove_task(type, id)) {
+        errlog("tasks.queue did not have " + type + " " + id);
+    }
+    var k = type[0] + '#' + id;
+    mcclient.delete(k, function(err, res) {
+        if (err) errlog(err);
+    });
+    var k = type[0] + ':' + id;
+    mcclient.get(k, function(err, _res) {
+        var j = JSON.parse(_res);
+        if (j.exit == 0) {
+            var path = strformat(
+                meecidir + "/containers/%s/%s.bz2", j.user, j.container
+            );
+            fs.stat(path, function(err, stats) {
+                var s = Math.floor(stats.size/1024/1024) + 1;
+                var q = strformat("UPDATE container SET size=%d WHERE id=%d", s, id);
+                sql_execute(q);
+            });
+        } else {
+            var q = strformat("UPDATE container SET size=%d WHERE id=%d", -1, id);
+            sql_execute(q);
+        }
+        res.send(200);
+    });
+});
+
 app.post("/hooks/:user", function(req, res) {
 });
 
@@ -300,6 +372,16 @@ http.createServer(app).listen(port, function() {
 /* Internal Functions */
 function errlog(err) {
     return console.error(err);
+}
+
+function remove_task(type, id) {
+    for (var i in tasks.queue) {
+        if (tasks.queue[i].type == type && tasks.queue[i].id == id) {
+            tasks.queue.splice(i, 1);
+            return true;
+        }
+    }
+    return false;
 }
 
 function check_letter(str, extra) {

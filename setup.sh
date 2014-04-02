@@ -13,10 +13,9 @@ apt-get install -y --no-install-recommends \
 mkdir -p /var/lib/meeci/logs/container
 mkdir -p /var/lib/meeci/logs/build
 mkdir -p /var/lib/meeci/containers
-mkdir -p /srv/ftp/meeci/containers
+mkdir -p /srv/ftp/meeci
 
-chmod 777 /srv/ftp/meeci
-chmod 777 /srv/ftp/meeci/containers
+chmod -R 777 /var/lib/meeci
 
 set +x
 echo "Perform the following steps manually:"

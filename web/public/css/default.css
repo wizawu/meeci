@@ -9,6 +9,10 @@ html, body {
     overflow-y: hidden;
 }
 
+a {
+    color: #669;
+}
+
 a:focus {
     outline: none;
 }
@@ -236,7 +240,7 @@ a:focus {
     padding: 10px;
     color: #f0f0f0;
     background-color: #101010;
-    font-family: "LetterGothicMono";
+    font-family: Monospace;
     font-size: 14px;
 }
 
@@ -274,7 +278,7 @@ a:focus {
 }
 
 #repos-options * textarea {
-    font-family: 'LetterGothicMono', Monospace;
+    font-family: Monospace;
     font-size: 14px;
 }
 
@@ -341,6 +345,10 @@ a:focus {
 
 #tab-container * #container-desc {
     width: 625px;
+}
+
+#container-script {
+    font-family: Monospace;
 }
 
 #tab-container * textarea {

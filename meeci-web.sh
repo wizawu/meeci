@@ -12,8 +12,12 @@ fi
 
 set -e
 
-sudo mount --bind /var/lib/meeci/containers/ /srv/ftp/meeci/containers/
-sudo /etc/init.d/vsftpd restart
+sudo mount --bind /var/lib/meeci/ /srv/ftp/meeci/
+sudo chmod -R 777 /srv/ftp/meeci/
+
+if [[ `pgrep vsftpd` == '' ]]; then
+    sudo /etc/init.d/vsftpd restart
+fi
 
 if [[ `pgrep memcached` == '' ]]; then
     sudo /etc/init.d/memcached restart
