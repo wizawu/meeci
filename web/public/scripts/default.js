@@ -482,9 +482,24 @@ function refreshContList() {
                     s += a + 'Error</a></td>';
                 }
                 s += '<td><button type="button" class="btn btn-danger" '
-                     + 'name="' + r.name + '">Remove</button></td>';
+                     + 'id="/destroy/' + r.name + '">Remove</button></td>';
                 s += "</tr>";
                 t.innerHTML += s;
+            }
+            // add remove-container event to buttons
+            for (var i in model.get('list')) {
+                var r = model.get('list')[i];
+                var b = document.getElementById('/destroy/' + r.name);
+                b.onclick = function() {
+                    var destroy = new Backbone.Model;
+                    destroy.url = this.id;
+                    destroy.save(this.attributes, {
+                        error: function(model, repsonse, options) {
+                            refreshContList();
+                        }
+                    });
+                    return false;
+                };
             }
         }
     });

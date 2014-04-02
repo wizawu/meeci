@@ -361,6 +361,25 @@ app.post("/finish/:type/:id", function(req, res) {
     });
 });
 
+app.post("/destroy/:name", function(req, res) {
+    var user = req.session.user, name = req.params.name;
+    if (user && name) {
+        var q = strformat(
+            "DELETE FROM container WHERE user_ = '%s' AND name = '%s'", 
+            user, name
+        );
+        sql_execute(q, function(_) { res.send(200); });
+        fs.unlink(meecidir + strformat("/containers/%s/%s.bz2", user, name), function(err) {
+            if (err) errlog(err);
+        });
+        fs.unlink(meecidir + strformat("/containers/%s/%s.sh", user, name), function(err) {
+            if (err) errlog(err);
+        });
+    } else {
+        res.send(400);
+    }
+});
+
 app.post("/hooks/:user", function(req, res) {
 });
 
