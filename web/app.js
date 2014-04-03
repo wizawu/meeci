@@ -490,6 +490,26 @@ app.post("/hooks/:user", function(req, res) {
     }
 });
 
+app.get("/console/:id", function(req, res) {
+    var id = req.params.id;
+    if (id) {
+        mcclient.get('b#' + id, function(err, val) {
+            if (err) return errlog(err);
+            if (val == null) return res.json(200, {console: ""});
+            val = val.replace(/&/g, '&amp;')
+                     .replace(/"/g, '&quot;')
+                     .replace(/'/g, '&#39;')
+                     .replace(/</g, '&lt;')
+                     .replace(/>/g, '&gt;')
+                     .replace(/\r\n/g, '<br/>')
+                     .replace(/\n/g, '<br/>');
+            res.json(200, {console: val});
+        });
+    } else {
+        res.send(400);
+    }
+});
+
 var port = process.env.MEECI_PORT || 3780;
 http.createServer(app).listen(port, function() {
     console.log("Meeci Web is listening on port " + port);

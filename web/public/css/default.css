@@ -243,6 +243,7 @@ a:focus {
     background-color: #101010;
     font-family: Monospace;
     font-size: 12px;
+    overflow-x: scroll;
 }
 
 #tab-history {

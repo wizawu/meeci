@@ -7,21 +7,6 @@ Repos = Backbone.Model.extend({
     defaults: {watched: []},
     url: "/repos"
 });
-Build = Backbone.Model.extend({
-    defaults: {
-        id: null,
-        repository: 'Meeci',
-        desc: null,
-        owner: null,
-        host: null,
-        build: null,
-        start: null,
-        container: null,
-        worker: null,
-        commit: null,
-        committer: null
-    },
-});
 User = Backbone.Model.extend({
     defaults: {
         user : null,
@@ -31,9 +16,10 @@ User = Backbone.Model.extend({
     url: "/user"
 });
 
+var queue = new Queue();
 var repos = new Repos();
-var build = new Build();
 var user = new User();
+var build_id = null;
 
 /* Return the first child with the specified tag name */
 function getChildByTagName(node, tag) {
@@ -354,7 +340,7 @@ function refreshReposList() {
                     activeTab('tab-history');
                     document.getElementById('repos-name').innerHTML = args[3];
                     document.getElementById('repos-desc').innerHTML = 
-                        getChildByTagName(this, 'p').innerHTML;
+                        getChildByTagName(this.parentNode, 'p').innerHTML;
                     return false;
                 }
             }
@@ -421,8 +407,7 @@ function addUpdateReposEvent() {
 }
 
 function refreshTaskQueue() {
-    var q = new Queue();
-    q.fetch({
+    queue.fetch({
         success: function(model, response, options) {
             var d = document.getElementById("queue");
             var t = document.getElementById("task-tmpl");
@@ -431,6 +416,7 @@ function refreshTaskQueue() {
                 var j = model.get("queue")[i];
                 if (j.type == "container") continue;
                 var n = t.cloneNode(true); 
+                n.id = 'build' + j.id;
                 var href = j.owner + '/' + j.repository;
                 if (j.url.search("git@github") == 0) {
                     n.className = "github-task";
@@ -454,17 +440,41 @@ function refreshTaskQueue() {
                     + '</a><br>' + worker + '</span>'
                     + '<span class="task-right">' + j.build + '<br>'
                     + '<span class="task-time">' + m + ':' + s 
-                    + '</span>' + '</span><br><br>';
+                    + '</span></span><br><br>';
                 n.style.display = "block";
+                n.setAttribute('worker', worker);
                 n.onclick = function() {
                     activeTab('tab-console');
-                    setConsole();
+                    updateTabConsole(n.id.substr(5), this.getAttribute('worker'));
                     return false;
                 };
                 d.appendChild(n);
             }
         }
     });
+}
+
+function updateTabConsole(id, worker) {
+    build_id = id;
+    for (var i in queue.get("queue")) {
+        var t = queue.get("queue")[i];
+        if (t.id == build_id) {
+            document.getElementById('repos-name').innerHTML = t.repository;
+            document.getElementById('repos-desc').innerHTML = t.desc;
+            document.getElementById('build-value').innerHTML = t.build;
+            document.getElementById('container-value').innerHTML = t.container;
+            var cmturl = 'https://github.com/' + t.owner + '/' + t.repository
+                + '/commit/' + t.commit;
+            document.getElementById('commit-value').innerHTML =
+                '<a href="' + cmturl + '">' + t.commit.substr(0,7) + 
+                '(' + t.branch + ')</a>';
+            document.getElementById('worker-value').innerHTML = worker;
+            var cmtrurl = 'https://github.com/' + t.committer;
+            document.getElementById('committer-value').innerHTML =
+                '<a href="' + cmtrurl + '">' + t.committer + '</a>';
+            break;
+        }
+    }
 }
 
 function refreshTaskTime() {
@@ -480,6 +490,11 @@ function refreshTaskTime() {
             t.innerHTML = m + ':0' + s;
         } else {
             t.innerHTML = m + ':' + s; 
+        }
+        if (t.parentNode.parentNode.id == 'build' + build_id) {
+            document.getElementById('elapsed-value').innerHTML = t.innerHTML;
+            document.getElementById('worker-value').innerHTML =
+                t.parentNode.parentNode.getAttribute('worker');
         }
     }
 }
@@ -616,6 +631,20 @@ function refreshHistory(host, owner, repos) {
     });
 }
 
+function refreshConsole() {
+    if (build_id) {
+        var c = new Backbone.Model;
+        c.url = '/console/' + build_id;
+        c.fetch({
+            success: function(model, response, options) {
+                if (model.get("console").length == 0) return;
+                var e = document.getElementById("console");
+                e.innerHTML = model.get("console");
+            }
+        });
+    }
+}
+
 /* Gather all add-event functions */
 function addEvents() {
     addClickTabEvent();
@@ -636,6 +665,7 @@ window.onload = function() {
     addEvents();
     displayByUser();
     refreshTaskQueue();
-    window.setInterval(function(){ refreshTaskQueue(); }, 10000);
+    window.setInterval(function(){ refreshConsole() }, 5000);
+    window.setInterval(function(){ refreshTaskQueue(); }, 5000);
     window.setInterval(function(){ refreshTaskTime(); }, 1000);
 }
