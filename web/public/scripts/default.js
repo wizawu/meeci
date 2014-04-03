@@ -342,14 +342,14 @@ function refreshReposList() {
                 list.appendChild(n);
             }
 
-            var gs = document.getElementsByClassName('repos-group');
+            var gs = document.getElementsByClassName('repos-click');
             for (var i in gs) {
                 var g = gs[i];
                 g.onclick = function() {
-                    if (this.getAttribute('dir') == null) {
+                    if (this.parentNode.getAttribute('dir') == null) {
                         return false;
                     }
-                    var args = this.getAttribute('dir').split('/');
+                    var args = this.parentNode.getAttribute('dir').split('/');
                     refreshHistory(args[1], args[2], args[3]);
                     activeTab('tab-history');
                     document.getElementById('repos-name').innerHTML = args[3];
@@ -439,13 +439,19 @@ function refreshTaskQueue() {
                     n.className = "bitbucket-task";
                     href = 'https://bitbucket.org/' + href;
                 }
-                var m = Math.floor((new Date).getTime()/1000) - j.start;
+                if (j.start) {
+                    var m = Math.floor((new Date).getTime()/1000) - j.start;
+                    if (m <= 0) m = 1;
+                } else {
+                    var m = 0;
+                }
                 var s = m % 60;
                 if (s < 10) s = "0" + String(s);
                 m = (m - s) / 60;
+                var worker = j.worker || 'pending';
                 n.innerHTML = '<span class="task-left"><a href="' + href
                     + '">' + j.owner + '/' + j.repository
-                    + '</a><br>' + j.worker + '</span>'
+                    + '</a><br>' + worker + '</span>'
                     + '<span class="task-right">' + j.build + '<br>'
                     + '<span class="task-time">' + m + ':' + s 
                     + '</span>' + '</span><br><br>';
@@ -465,6 +471,7 @@ function refreshTaskTime() {
     var ts = document.getElementsByClassName('task-time');
     for (var i in ts) {
         var t = ts[i];
+        if (t.innerHTML.trim() == '0:00') continue;
         var m = Number(t.innerHTML.split(':')[0]);
         var s = Number(t.innerHTML.split(':')[1]) + 1;
         if (s == 60) {
@@ -585,6 +592,7 @@ function refreshHistory(host, owner, repos) {
             t.innerHTML = "";
             for (var i in model.get('list')) {
                 var r = model.get('list')[i];
+                if (! r.worker) continue;
                 if (r.host == 1) {
                     var site = "https://github.com/" + r.owner;
                 } else {

@@ -51,11 +51,11 @@ app.post("/signup", function(req, res) {
             res.send(403);
         } else {
             var cond = strformat("user_ = '%s'", user);
-            sql_exist("users", cond, function() {
+            sql_exist("users", cond, function(_) {
                 res.send(401);
             });
             var cond = strformat("email = '%s'", email);
-            sql_exist("users", cond, function() {
+            sql_exist("users", cond, function(_) {
                 res.send(402);
             });
             passwd = encrypt(passwd);
@@ -238,14 +238,19 @@ app.get("/task", function(req, res) {
         res.send(204);
     } else {
         for (var i in tasks.queue) {
-            if (tasks.queue[i].worker == null) {
-                tasks.queue[i].worker = req.ip;
-                tasks.queue[i].start = Math.floor((new Date).getTime()/1000);
-                return res.json(200, tasks.queue[i]);
+            var tqi = tasks.queue[i];
+            if (tqi.worker == null) {
+                tqi.worker = req.ip;
+                tqi.start = Math.floor((new Date).getTime()/1000);
+                tqi.strid = String(tqi.id);
+                return res.json(200, tqi);
             }
         }
         res.send(204);
     }
+});
+
+app.get("/script/:id", function(req, res) {
 });
 
 app.post("/container", function(req, res) {
@@ -343,21 +348,32 @@ app.post("/finish/:type/:id", function(req, res) {
     });
     var k = type[0] + ':' + id;
     mcclient.get(k, function(err, _res) {
+        if (err) return errlog(err);
         var j = JSON.parse(_res);
-        if (j.exit == 0) {
-            var path = strformat(
-                meecidir + "/containers/%s/%s.bz2", j.user, j.container
-            );
-            fs.stat(path, function(err, stats) {
-                var s = Math.floor(stats.size/1024/1024) + 1;
-                var q = strformat("UPDATE container SET size=%d WHERE id=%d", s, id);
+        if (type = 'build') {
+            sql_execute(strformat(
+                "UPDATE build SET " +
+                "worker='%s', start=to_timestamp(%d), duration=%d, return=%d" +
+                "WHERE id = %d",
+                req.ip, j.start, (j.stop - j.start), j.exit, id
+            ));
+        } else if (type == 'container') {
+            if (j.exit == 0) {
+                var path = strformat(
+                    meecidir + "/containers/%s/%s.bz2", j.user, j.container
+                );
+                fs.stat(path, function(err, stats) {
+                    var s = Math.floor(stats.size/1024/1024) + 1;
+                    var q = strformat("UPDATE container SET size=%d WHERE id=%d", s, id);
+                    sql_execute(q);
+                });
+            } else {
+                var q = strformat("UPDATE container SET size=%d WHERE id=%d", -1, id);
                 sql_execute(q);
-            });
-        } else {
-            var q = strformat("UPDATE container SET size=%d WHERE id=%d", -1, id);
-            sql_execute(q);
+            }
         }
         res.send(200);
+        mcclient.delete(k);
     });
 });
 
@@ -396,6 +412,67 @@ app.get("/history/:host/:owner/:repos", function(req, res) {
 });
 
 app.post("/hooks/:user", function(req, res) {
+    var user = req.params.user, body = req.body;
+    if (user && body && body.ref && body.commits && body.repository) {
+        var host = 1;
+        var owner = body.repository.owner.name;
+        var repos = body.repository.name;
+        var desc = body.repository.description;
+        var url = strformat("git@github.com:%s/%s.git", owner, repos);
+        var branch = body.ref.substr(11);
+        var cond = strformat(
+            "user_ = '%s' AND repos = '%s' AND owner = '%s' AND host = %d",
+            user, repos, owner, host
+        );
+        sql_exist('repos', cond, function(rows) {
+            var cond = strformat(
+                "repos = '%s' AND owner = '%s' AND host = %d",
+                repos, owner, host
+            );
+            var container = rows[0].container;
+            var q = "SELECT max(build) max_build FROM build WHERE " + cond;
+            sql_execute(q, function(rows) {
+                var b = Number(rows[0].max_build) + 1;
+                for (var i in body.commits) {
+                    var build = b + Number(i);
+                    var cmt = body.commits[i];
+                    var commit = cmt.id;
+                    var committer = cmt.committer.username;
+                    var msg = cmt.message;
+                    var id = (new Date).getTime()*1000000 + Number('0x'+commit.substr(0,5));
+                    sql_insert(
+                        'build', 
+                        "id, host, owner, repos, build, container," +
+                        "branch, commit, committer, message",
+                        strformat(
+                            "%d,%d,'%s','%s',%d,'%s','%s','%s','%s','%s'",
+                            id, host, owner, repos, build, container,
+                            branch, commit, committer, msg
+                        )
+                    );
+                    tasks.queue.push({
+                        user: user,
+                        type: 'build',
+                        id: id,
+                        url: url,
+                        host: 1,
+                        owner: owner,
+                        repository: repos,
+                        desc: desc,
+                        branch: branch,
+                        commit: commit,
+                        committer: committer,
+                        message: msg,
+                        container: container,
+                        build: build
+                    });
+                }
+            });
+            res.send(200);
+        });
+    } else {
+        res.send(400);
+    }
 });
 
 var port = process.env.MEECI_PORT || 3780;
@@ -490,7 +567,7 @@ function https_get(host, path, callback) {
 
 /* SQL Query */
 function sql_exist(table, cond, callback) {
-    var q = strformat("SELECT 1 FROM %s WHERE %s;", table, cond);
+    var q = strformat("SELECT * FROM %s WHERE %s;", table, cond);
     pg.connect(pgdb, function(err, client, release) {
         if (err) return errlog(err);
         client.query(q, function(err, res) {
@@ -498,7 +575,7 @@ function sql_exist(table, cond, callback) {
             if (err) {
                 return errlog(err);
             } else if (res.rows.length > 0) {
-                callback();
+                callback(res.rows);
             }
         });
     });
@@ -511,10 +588,10 @@ function sql_insert(table, fields, values, callback) {
         client.query(q, function(err, res) {
             release();
             if (err) {
-                callback(500);
+                if (callback) callback(500);
                 return errlog(err);
             } else {
-                callback(200);
+                if (callback) callback(200);
             }
         });
     });

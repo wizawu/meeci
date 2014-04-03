@@ -335,6 +335,14 @@ a:focus {
     right: 5px;
 }
 
+.repos-group .repos-click {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 80px;
+    height: 100%;
+}
+
 #tab-container {
     position: relative;
     top: -10px;
