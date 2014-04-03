@@ -20,7 +20,7 @@ INSERT INTO users(user_, name, email, status, passwd, salt) VALUES(
 
 -- build --
 CREATE TABLE build (
-    id           SERIAL PRIMARY KEY,
+    id           BIGINT PRIMARY KEY,
     
     host         SMALLINT,
     owner        TEXT,
