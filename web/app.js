@@ -250,7 +250,21 @@ app.get("/task", function(req, res) {
     }
 });
 
-app.get("/script/:id", function(req, res) {
+app.get("/scripts/:user/:repos/:owner/:host", function(req, res) {
+    var params = req.params, user = params.user;
+    var repos = params.repos, owner = params.owner, host = params.host;
+    if (user && repos && owner && host) {
+        var q = strformat(
+            "SELECT script FROM repos WHERE user_ = '%s' AND " +
+            "repos = '%s' AND owner = '%s' AND host = %d",
+            user, repos, owner, host
+        );
+        sql_execute(q, function(rows) {
+            res.send(200, rows[0].script);
+        });
+    } else {
+        res.send(400);
+    }
 });
 
 app.post("/container", function(req, res) {
@@ -324,8 +338,9 @@ app.get("/container/:name", function(req, res) {
     }
 });
 
-app.get("/logs/container/:id", function(req, res) {
-    var path = strformat(meecidir + "/logs/container/%d.log", req.params.id);
+app.get("/logs/:type/:id", function(req, res) {
+    var type = req.params.type, id = req.params.id;
+    var path = strformat(meecidir + "/logs/%s/%d.log", type, id);
     fs.readFile(path, function(err, data) {
         if (err) {
             errlog(err);
