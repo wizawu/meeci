@@ -7,13 +7,14 @@ fi
 
 set -x -e
 
-mkdir -p minbase
-debootstrap --arch=amd64 --variant=minbase jessie ./minbase \
+DIR='./container'
+mkdir -p $DIR
+debootstrap --arch=amd64 --variant=minbase jessie $DIR \
             http://mirrors.163.com/debian
-systemd-nspawn -D ./minbase apt-get clean
+systemd-nspawn -D $DIR apt-get clean
 
-tar jcf meeci-minbase.bz2 -C minbase .
-rm -rf minbase
+tar jcf meeci-minbase.bz2 $DIR
+rm -rf $DIR
 
 set +x
 
