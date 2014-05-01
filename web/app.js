@@ -3,30 +3,38 @@ var fs = require("fs");
 var http = require("http");
 var https = require("https");
 var util = require("util");
+
+// External libraries
 var express = require("express");
 var memcache = require("memcache");
 var pg = require("pg.js");
 
-var strformat = util.format;
-var pgdb = "postgres://meeci:IoMQwf5E7u8@0.0.0.0/meeci";
-var mcclient = new memcache.Client(11211, 'localhost');
+// Meeci data location
 var meecidir = "/var/lib/meeci";
-var tasks = {queue: []};
-var app = express();
 
+// PostgreSQL
+var pgdb = "postgres://meeci:IoMQwf5E7u8@0.0.0.0/meeci";
+
+// Memcache client
+var mcclient = new memcache.Client(11211, 'localhost');
 mcclient.on('connect', function() { console.log("Connect to Memcache"); });
 mcclient.on('error', function(err) { console.error(err); });
 mcclient.connect();
 
+// Global task queue
+var tasks = {queue: []};
+
+// Create the express app
+var app = express();
 app.use(express.static("./public"));
 app.use(express.logger({
     format: ':remote-addr - - [:date] ":method :url HTTP/:http-version" '+
             ':status :res[content-length] - :response-time ms'
 }));
-app.use(express.errorHandler());
 app.use(express.bodyParser());
 app.use(express.cookieParser(crypto.randomBytes(64).toString('base64')));
 app.use(express.session());
+app.use(express.errorHandler());
 
 app.get("/", function(req, res) {
     res.sendfile("home.html");
@@ -37,6 +45,7 @@ app.get("/logout", function(req, res) {
     res.send(200);
 });
 
+// Join Now
 app.post("/signup", function(req, res) {
     var body = req.body;
     var user = body.user, email = body.email, passwd = body.passwd;
@@ -510,15 +519,19 @@ app.get("/console/:id", function(req, res) {
     }
 });
 
+// Start http server
 var port = process.env.MEECI_PORT || 3780;
 http.createServer(app).listen(port, function() {
     console.log("Meeci Web is listening on port " + port);
 });
 
-/* Internal Functions */
-function errlog(err) {
-    return console.error(err);
-}
+
+/***************************************
+           Internal Functions
+ ***************************************/
+
+var strformat = util.format;
+var errlog = console.error;
 
 function remove_task(type, id) {
     for (var i in tasks.queue) {
@@ -558,6 +571,7 @@ function gravatar_url(email) {
     return strformat("http://www.gravatar.com/avatar/%s.png?s=48", hex);
 }
 
+// return 1 for GitHub, 2 for Bitbucket, -1 otherwise
 function resolve_git(url) {
     var github = /git@github.com:\w+\/\S+\.git/gi;
     var bitbucket = /git@bitbucket.org:\w+\/\S+\.git/gi;
@@ -566,6 +580,7 @@ function resolve_git(url) {
     else return -1;
 }
 
+// resolve repository name and owner
 function repos_owner(url) {
     var n = url.length;
     if (url.search("git@github.com") == 0) {
@@ -575,6 +590,7 @@ function repos_owner(url) {
     }
 }
 
+// send a HTTPS GET request to Git server
 function https_get(host, path, callback) {
     var host = (host == 1) ? "api.github.com" : "api.bitbucket.org";
     https.get({
@@ -600,7 +616,6 @@ function https_get(host, path, callback) {
     });
 }
 
-/* SQL Query */
 function sql_exist(table, cond, callback) {
     var q = strformat("SELECT * FROM %s WHERE %s;", table, cond);
     pg.connect(pgdb, function(err, client, release) {
