@@ -47,39 +47,45 @@ app.get("/logout", function(req, res) {
 
 // Join Now
 app.post("/signup", function(req, res) {
-    var body = req.body;
-    var user = body.user, email = body.email, passwd = body.passwd;
+    var body   = req.body;
+    var user   = body.user.trim();
+    var email  = body.email.trim();
+    var passwd = body.passwd.trim();
+
     if (user && email && passwd) {
-        if (user[0] >= '0' && user[0] <= '9') {
+        // check length
+        if (user.length > 32) {
+            res.send(401);
+        } else if (email.length > 128) {
+            res.send(402);
+        } else if (passwd.length > 128) {
+            res.send(403);
+        // check letter
+        } else if (user[0] == '_') {
+            res.send(401);
+        } else if (user[0] >= '0' && user[0] <= '9') {
             res.send(401);
         } else if (! check_letter(user)) {
             res.send(401);
-        } else if (! check_letter(email, "@-.")) {
+        } else if (! check_letter(email, "@.-")) {
             res.send(402);
         } else if (! check_letter(passwd)) {
             res.send(403);
+        // check database
         } else {
-            var cond = strformat("user_ = '%s'", user);
-            sql_exist("users", cond, function(_) {
-                res.send(401);
-            });
-            var cond = strformat("email = '%s'", email);
-            sql_exist("users", cond, function(_) {
-                res.send(402);
-            });
             passwd = encrypt(passwd);
             var values = strformat(
-                "'%s', '%s', '%s', '%s', 1",
+                "'%s', '%s', '%s', '%s', 0",
                 user, email, passwd.hash, passwd.salt
             );
-            // TODO: do not use the two sql_exist above
             sql_insert(
-                "users", "user_, email, passwd, salt, status",
-                values, function(code) {
+                "users", "user_, email, passwd, salt, status", values,
+                function(code) {
                     if (code == 200) {
-                        fs.mkdir(meecidir + '/containers/wizawu', function(err) {
-                            console.log(err);
-                        });
+                        fs.mkdir(
+                            meecidir + '/containers/wizawu',
+                            function(err) { errlog(err); }
+                        );
                     }
                     res.send(code);
                 }
@@ -638,7 +644,15 @@ function sql_insert(table, fields, values, callback) {
         client.query(q, function(err, res) {
             release();
             if (err) {
-                if (callback) callback(500);
+                var code = 500;
+                // 401, 402 are used by post("/signup")
+                if (err.toString().search('constraint "users_user_idx"') >= 0) {
+                    code = 401;
+                }
+                if (err.toString().search('constraint "users_email_idx"') >= 0) {
+                    code = 402;
+                }
+                if (callback) callback(code);
                 return errlog(err);
             } else {
                 if (callback) callback(200);
