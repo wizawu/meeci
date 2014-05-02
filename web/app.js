@@ -79,7 +79,7 @@ app.post("/signup", function(req, res) {
         } else {
             passwd = encrypt(passwd);
             var values = strformat(
-                "'%s', '%s', '%s', '%s', 0",
+                "'%s', '%s', '%s', '%s', 1",
                 user, email, passwd.hash, passwd.salt
             );
             sql_insert(
@@ -87,7 +87,7 @@ app.post("/signup", function(req, res) {
                 function(code) {
                     if (code == 200) {
                         fs.mkdir(
-                            meecidir + '/containers/wizawu',
+                            meecidir + '/containers/' + user,
                             function(err) { errlog(err); }
                         );
                     }
@@ -269,7 +269,8 @@ app.post("/repos/options/:host/:owner/:repos", function(req, res) {
             return res.send(403);
         }
         var q = strformat(
-            "UPDATE repos SET container='%s', script='%s' WHERE user_='%s' AND repos='%s' AND owner='%s' AND host=%d",
+            "UPDATE repos SET container='%s', script='%s' " +
+            "WHERE user_='%s' AND repos='%s' AND owner='%s' AND host=%d",
             cont, script, user, repos, owner, host
         );
         sql_execute(q, function(_) { res.send(200); });
@@ -283,6 +284,7 @@ app.get("/queue", function(req, res) {
 });
 
 app.get("/task", function(req, res) {
+    // check worker IP
     if (! req.ip in WORKERS) {
         res.send(403);
     } else if (tasks.queue.length == 0) {
@@ -304,7 +306,13 @@ app.get("/task", function(req, res) {
 app.get("/scripts/:user/:repos/:owner/:host", function(req, res) {
     var params = req.params, user = params.user;
     var repos = params.repos, owner = params.owner, host = params.host;
+    user = user && user.trim();
+    repos = repos && repos.trim();
+    owner = owner && owner.trim();
     if (user && repos && owner && host) {
+        if (!check_letter(user) || !check_legal(repos, " ';") || !check_legal(owner, " ';")) {
+            return res.send(403);
+        }
         var q = strformat(
             "SELECT script FROM repos WHERE user_ = '%s' AND " +
             "repos = '%s' AND owner = '%s' AND host = %d",
@@ -416,7 +424,7 @@ app.post("/finish/:type/:id", function(req, res) {
     mcclient.get(k, function(err, _res) {
         if (err) return errlog(err);
         var j = JSON.parse(_res);
-        if (type = 'build') {
+        if (type == 'build') {
             sql_execute(strformat(
                 "UPDATE build SET " +
                 "worker='%s', start=to_timestamp(%d), duration=%d, return=%d" +
@@ -429,6 +437,7 @@ app.post("/finish/:type/:id", function(req, res) {
                     meecidir + "/containers/%s/%s.bz2", j.user, j.container
                 );
                 fs.stat(path, function(err, stats) {
+                    errlog(err);
                     var s = Math.floor(stats.size/1024/1024) + 1;
                     var q = strformat("UPDATE container SET size=%d WHERE id=%d", s, id);
                     sql_execute(q);
