@@ -257,6 +257,10 @@ function addUpdateAccountEvent() {
                             alert("Invalid new password.");
                             inputs[2].value = inputs[3].value = "";
                             break;
+                        case 403:
+                            alert("The name contains illegal characters.");
+                            inputs[0].value = "";
+                            break;
                         default:
                             alert(response.status + " " + response.statusText);
                     }

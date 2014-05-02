@@ -48,11 +48,13 @@ app.get("/logout", function(req, res) {
 // Join Now
 app.post("/signup", function(req, res) {
     var body   = req.body;
-    var user   = body.user.trim();
-    var email  = body.email.trim();
-    var passwd = body.passwd.trim();
+    var user   = body.user;
+    var email  = body.email;
+    var passwd = body.passwd;
 
-    if (user && email && passwd) {
+    if (user && user.trim() && email && email.trim() && passwd) {
+        user = user.trim();
+        email = email.trim();
         // check length
         if (user.length > 32) {
             res.send(401);
@@ -96,22 +98,34 @@ app.post("/signup", function(req, res) {
     }
 });
 
+// Log in or update profile with password
 app.post("/user", function(req, res) {
     var body = req.body;
     var user = body.user, passwd = body.passwd;
-    if (user && passwd) {
+    if (user && user.trim() && check_letter(user) && passwd) {
+        if (! check_letter(passwd)) {
+            return res.send(401);
+        }
+        user = user.trim();
         sql_auth(user, passwd, function(code) {
             if (code == 200) {
+                // log in
                 req.session.user = user;
-                var name = body.name, new_passwd = body.new_passwd, q;
-                if (name) {
-                    q = strformat(
+                // update name
+                var name = body.name;
+                if (name && name.trim()) {
+                    name = name.trim();
+                    if (! check_legal(name, "-';")) return res.send(403);
+                    var q = strformat(
                         "UPDATE users SET name='%s' WHERE user_='%s'",
                         name, user
                     );
                     sql_execute(q);
                 }
+                // update new password
+                var new_passwd = body.new_passwd;
                 if (new_passwd) {
+                    if (! check_letter(new_passwd)) return res.send(402);
                     passwd = encrypt(new_passwd);
                     q = strformat(
                         "UPDATE users SET passwd='%s', salt='%s' WHERE user_='%s'",
@@ -127,6 +141,7 @@ app.post("/user", function(req, res) {
     }
 });
 
+// Retrieve user profile if session.user is not null
 app.get("/user", function(req, res) {
     if (req.session.user == null) {
         res.json({"user": null});
@@ -562,6 +577,14 @@ function check_letter(str, extra) {
     return true;
 }
 
+function check_legal(str, ill) {
+    for (var i in ill) {
+        var c = ill[i];
+        if (str.search(c) >= 0) return false;
+    }
+    return true;
+}
+
 function encrypt(passwd) {
     var salt = crypto.randomBytes(32).toString("base64");
     var hash = crypto.createHash("sha256").update(salt+passwd).digest("base64");
@@ -577,7 +600,7 @@ function gravatar_url(email) {
     return strformat("http://www.gravatar.com/avatar/%s.png?s=48", hex);
 }
 
-// return 1 for GitHub, 2 for Bitbucket, -1 otherwise
+// Return 1 for GitHub, 2 for Bitbucket, -1 otherwise
 function resolve_git(url) {
     var github = /git@github.com:\w+\/\S+\.git/gi;
     var bitbucket = /git@bitbucket.org:\w+\/\S+\.git/gi;
@@ -586,7 +609,7 @@ function resolve_git(url) {
     else return -1;
 }
 
-// resolve repository name and owner
+// Resolve repository name and owner
 function repos_owner(url) {
     var n = url.length;
     if (url.search("git@github.com") == 0) {
@@ -596,7 +619,7 @@ function repos_owner(url) {
     }
 }
 
-// send a HTTPS GET request to Git server
+// Send a HTTPS GET request to Git server
 function https_get(host, path, callback) {
     var host = (host == 1) ? "api.github.com" : "api.bitbucket.org";
     https.get({
