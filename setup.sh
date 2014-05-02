@@ -8,7 +8,7 @@ fi
 set -x -e
 
 apt-get install -y --no-install-recommends \
-                memcached nodejs vsftpd
+                debootstrap memcached nodejs vsftpd
 
 mkdir -p /var/lib/meeci/logs/container
 mkdir -p /var/lib/meeci/logs/build

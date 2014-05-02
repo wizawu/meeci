@@ -436,6 +436,7 @@ app.post("/finish/:type/:id", function(req, res) {
                 var path = strformat(
                     meecidir + "/containers/%s/%s.bz2", j.user, j.container
                 );
+                fs.chmod(path, '744', function(err) { errlog(err); });
                 fs.stat(path, function(err, stats) {
                     errlog(err);
                     var s = Math.floor(stats.size/1024/1024) + 1;
