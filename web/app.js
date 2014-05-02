@@ -23,6 +23,8 @@ mcclient.connect();
 
 // Global task queue
 var tasks = {queue: []};
+// Legal workers
+var WORKERS = ['127.0.0.1'];
 
 // Create the express app
 var app = express();
@@ -174,10 +176,15 @@ app.post("/watch", function(req, res) {
     var user = req.session.user;
     var giturl = req.body.giturl, watch = req.body.watch;
     if (user && giturl) {
+        // resolve host, owner, repository name
         var host = resolve_git(giturl);
         if (host == -1) return res.send(406);
         var owner = repos_owner(giturl)[0];
         var repos = repos_owner(giturl)[1];
+        if (!check_legal(owner, " ';") || !check_legal(repos, " ';")) {
+            return res.send(403);
+        }
+        // watch or unwatch
         if (watch == false) {
             var q = strformat(
                 "DELETE FROM repos WHERE user_='%s' AND repos='%s' AND owner='%s' AND host=%d",
@@ -191,7 +198,10 @@ app.post("/watch", function(req, res) {
             var path = strformat("/repos/%s/%s", owner, repos);
         } else {
             var path = strformat("/2.0/repositories/%s/%s", owner, repos);
+            // other git repositories are not supported yet
+            return res.send(501);
         }
+        // fetch repository description from Git server
         https_get(host, path, function(j) {
             if (typeof(j) == "number") {
                 res.send(j);
@@ -227,6 +237,9 @@ app.get("/repos/options/:host/:owner/:repos", function(req, res) {
         var host = (req.params.host == "github") ? 1 : 2;
         var owner = req.params.owner;
         var repos = req.params.repos;
+        if (!check_legal(owner, " ';") || !check_legal(repos, " ';")) {
+            return res.send(403);
+        }
         var q = strformat(
             "SELECT * FROM repos WHERE user_='%s' AND repos='%s' AND owner='%s' AND host=%d",
             user, repos, owner, host
@@ -244,11 +257,17 @@ app.get("/repos/options/:host/:owner/:repos", function(req, res) {
 
 app.post("/repos/options/:host/:owner/:repos", function(req, res) {
     var user = req.session.user, body = req.body;
-    var cont = body.container, script = body.script.replace(/'/g, "''");
-    if (user && cont && script) {
+    var cont = body.container, script = body.script;
+    if (script) script = script.replace(/'/g, "''");
+    if (user && cont && cont.trim() && script) {
+        cont = cont.trim();
+        if (! check_letter(cont, ".-")) return res.send(401);
         var host = (req.params.host == "github") ? 1 : 2;
         var owner = req.params.owner;
         var repos = req.params.repos;
+        if (!check_legal(owner, " ';") || !check_legal(repos, " ';")) {
+            return res.send(403);
+        }
         var q = strformat(
             "UPDATE repos SET container='%s', script='%s' WHERE user_='%s' AND repos='%s' AND owner='%s' AND host=%d",
             cont, script, user, repos, owner, host
@@ -264,7 +283,9 @@ app.get("/queue", function(req, res) {
 });
 
 app.get("/task", function(req, res) {
-    if (tasks.queue.length == 0) {
+    if (! req.ip in WORKERS) {
+        res.send(403);
+    } else if (tasks.queue.length == 0) {
         res.send(204);
     } else {
         for (var i in tasks.queue) {
@@ -685,7 +706,7 @@ function sql_insert(table, fields, values, callback) {
 }
 
 function sql_auth(user, passwd, callback) {
-    var q = strformat("SELECT * FROM users WHERE user_ = '%s'", user);
+    var q = strformat("SELECT * FROM users WHERE user_='%s' AND status=1", user);
     pg.connect(pgdb, function(err, client, release) {
         if (err) return errlog(err);
         client.query(q, function(err, res) {

@@ -401,8 +401,14 @@ function addUpdateReposEvent() {
                         alert("Update successfully!");
                         displayElementById("repos-options", "none");
                         break;
+                    case 400:
+                        alert("Empty container name or script.");
+                        break;
+                    case 401:
+                        alert("Invalid container name.");
+                        break;
                     default:
-                        alert("Incorrect settings.");
+                        alert(response.status + " " + response.statusText);
                 }
             }
         });
