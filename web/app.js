@@ -47,7 +47,14 @@ app.get("/logout", function(req, res) {
     res.send(200);
 });
 
-// Join Now
+/* Join Now
+ * 200: success
+ * 400: incomplete information
+ * 401: invalid username
+ * 402: invalid email
+ * 403: invalid password
+ * 500: SQL INSERT error
+ */
 app.post("/signup", function(req, res) {
     var body   = req.body;
     var user   = body.user;
@@ -86,10 +93,11 @@ app.post("/signup", function(req, res) {
                 "users", "user_, email, passwd, salt, status", values,
                 function(code) {
                     if (code == 200) {
-                        fs.mkdir(
-                            meecidir + '/containers/' + user,
-                            function(err) { errlog(err); }
-                        );
+                        var path = meecidir + '/containers/' + user,
+                        fs.mkdir(path, function(err) { 
+                            if (err) errlog(err);
+                            fs.chmodSync(path, '777');
+                        });
                     }
                     res.send(code);
                 }
@@ -100,7 +108,15 @@ app.post("/signup", function(req, res) {
     }
 });
 
-// Log in or update profile with password
+/* Log in or update profile with password
+ * 200: success
+ * 400: incomplete information
+ * 401: invalid password
+ * 402: invalid new password
+ * 403: invalid name
+ * 404: non-existent user
+ * 500: SQL SELECT error
+ */
 app.post("/user", function(req, res) {
     var body = req.body;
     var user = body.user, passwd = body.passwd;
@@ -726,7 +742,7 @@ function sql_auth(user, passwd, callback) {
                 return errlog(err);
             } else {
                 if (res.rows.length == 0) {
-                    callback(401);
+                    callback(404);
                 } else {
                     var hash = res.rows[0].passwd;
                     var salt = res.rows[0].salt;
