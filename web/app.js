@@ -93,7 +93,7 @@ app.post("/signup", function(req, res) {
                 "users", "user_, email, passwd, salt, status", values,
                 function(code) {
                     if (code == 200) {
-                        var path = meecidir + '/containers/' + user,
+                        var path = meecidir + '/containers/' + user;
                         fs.mkdir(path, function(err) { 
                             if (err) errlog(err);
                             fs.chmodSync(path, '777');
